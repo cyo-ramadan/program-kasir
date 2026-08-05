@@ -1,2 +1,0 @@
-# program-kasir
-tes
