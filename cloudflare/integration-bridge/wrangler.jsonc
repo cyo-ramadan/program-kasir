@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "maxi-integration-bridge",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": { "ENVIRONMENT": "staging" },
+  "d1_databases": [{
+    "binding": "BRIDGE_DB",
+    "database_name": "maxi-integration-bridge",
+    "database_id": "REPLACE_WITH_BRIDGE_D1_DATABASE_ID"
+  }],
+  "queues": {
+    "consumers": [{
+      "queue": "maxi-integration-events",
+      "max_batch_size": 10,
+      "max_batch_timeout": 5,
+      "max_retries": 5,
+      "dead_letter_queue": "maxi-integration-events-dlq"
+    }]
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

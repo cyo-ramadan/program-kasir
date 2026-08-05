@@ -1,29 +1,28 @@
-# MAXI Program Kasir v0.1.0
+# MAXI Garam POS v0.2.0-staged
 
+Garam is the MAXI POS application. The browser prototype remains runnable locally, while this branch contains a staged Cloudflare architecture for separate-database integration.
 
-Source code Program Kasir dengan UI/UX yang mengikuti pola visual Program Ikan.
-
-
-## Menjalankan
-
-
-Gunakan static web server dari folder ini, misalnya `python3 -m http.server 4173`, lalu buka `http://localhost:4173`. JavaScript modules tidak boleh dibuka langsung melalui `file://`.
-
-
-## Validasi
-
-
-```bash
-npm test
-npm run check
+```text
+Garam Site/browser
+  -> Garam Worker API
+  -> Garam D1: saleHeaders + saleDetails + salePayments + integrationOutbox
+  -> Cloudflare Queue
+  -> Integration Bridge Worker
+  -> Bridge D1: integrationEventHeaders + integrationEventDetails + integrationEventTargets
+  -> Accounting target: NEEDS_MAPPING
+  -> Warehouse target: NEEDS_MAPPING
 ```
 
+Garam never writes Accounting or Warehouse databases directly.
 
-## Integration spaces
+## Validation
 
+```sh
+npm run check
+npm test
+npm run validate:sql
+```
 
-- Barcode: `BarcodeScannerPort` di `src/pos-core.js`.
-- Accounting: `AccountingIntegrationPort` di `src/pos-core.js`.
+## Deployment status
 
-
-Keduanya sengaja belum dikonfigurasi. Adapter, event, mapping, retry, dan reconciliation baru boleh dibuat setelah contract MAXI terkait disetujui.
+The source foundation is implemented. Cloudflare resources, secrets, migrations, Garam Site runtime configuration, mappings, consumer adapters, and production approvals are still required. Live target processing remains fail-closed.

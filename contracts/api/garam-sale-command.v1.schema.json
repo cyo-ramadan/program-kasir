@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxi.internal/contracts/api/garam-sale-command.v1.schema.json",
+  "title": "Garam sale command v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["saleHeader", "saleDetails", "salePayments"],
+  "properties": {
+    "saleHeader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["saleId", "businessDate", "occurredAt", "sourceApp", "subtotalAmountMinor", "discountAmountMinor", "totalAmountMinor", "saleStatus"],
+      "properties": {
+        "saleId": { "type": "string", "minLength": 1 },
+        "businessDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "sourceApp": { "const": "garam-pos" },
+        "subtotalAmountMinor": { "type": "integer", "minimum": 0 },
+        "discountAmountMinor": { "type": "integer", "minimum": 0 },
+        "totalAmountMinor": { "type": "integer", "minimum": 0 },
+        "saleStatus": { "const": "COMPLETED" }
+      }
+    },
+    "saleDetails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["saleLineId", "productId", "productNameSnapshot", "quantity", "unitOfMeasureId", "unitPriceAmountMinor", "lineTotalAmountMinor"],
+        "properties": {
+          "saleLineId": { "type": "string", "minLength": 1 },
+          "productId": { "type": "string", "minLength": 1 },
+          "productNameSnapshot": { "type": "string", "minLength": 1 },
+          "quantity": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "unitOfMeasureId": { "type": ["string", "null"] },
+          "unitPriceAmountMinor": { "type": "integer", "minimum": 0 },
+          "lineTotalAmountMinor": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "salePayments": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["salePaymentId", "paymentMethodId", "paymentAmountMinor", "changeAmountMinor"],
+        "properties": {
+          "salePaymentId": { "type": "string", "minLength": 1 },
+          "paymentMethodId": { "type": "string", "minLength": 1 },
+          "paymentAmountMinor": { "type": "integer", "minimum": 0 },
+          "changeAmountMinor": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

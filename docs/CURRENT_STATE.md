@@ -1,18 +1,13 @@
 # Current State
 
+As of: 2026-08-05
+Version: 0.2.0-staged
+Status: RUNNABLE LOCAL POS; SERVER INTEGRATION IN SOURCE BUT NOT DEPLOYED
 
-Status: PROPOSED — local prototype.
+Active browser capabilities remain product, cart, payment, receipt, history, dashboard, and local snapshots. The Garam adapter is fail-closed without runtime API configuration.
 
+Staged source includes an authenticated Garam Worker, dedicated Garam D1 header-detail storage, transactional outbox, Queue delivery, Integration Bridge ingestion, separate Bridge D1, duplicate protection, and per-target `NEEDS_MAPPING` status.
 
-Active capabilities: product search and category filters; cart add/update/remove; manual barcode entry simulation; discount; cash/non-cash selection; payment and change; printable receipt; local sales history; product maintenance; dashboard; versioned local persistence; responsive device UI.
+No Cloudflare resource or migration was created by this changeset. Placeholder IDs remain and `INTEGRATION_CONTRACT_STATUS` defaults to `STAGED`.
 
-
-Prepared infrastructure: `wrangler.toml` binds `DB` to `maxi-db`, and `schema.sql` defines the proposed D1 `products` table. No Worker/API adapter or remote migration is active yet.
-
-Known limitations: no authentication, active server persistence, multi-device sync, real barcode hardware, Inventory integration, Accounting integration, tax contract, refunds, offline outbox, or approved shared event.
-
-
-Supported runtime: current evergreen browsers with JavaScript modules and `localStorage`; Node.js 20+ for tests.
-
-
-Pending integrations remain disabled and must not be described as active.
+Accounting has no active public API/event/production database. Warehouse source, manifest, contract, and API were not accessible through connected GitHub and Drive sources. No journal or stock movement is created by this version.

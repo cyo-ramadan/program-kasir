@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxi.internal/contracts/events/sale.completed.v1.schema.json",
+  "title": "sale.completed.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "contractVersion", "sourceApp", "transactionId", "occurredAt", "businessDate", "correlationId", "idempotencyKey", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "minLength": 1 },
+    "eventType": { "const": "sale.completed.v1" },
+    "contractVersion": { "const": "1.0.0" },
+    "sourceApp": { "const": "garam-pos" },
+    "transactionId": { "type": "string", "minLength": 1 },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "businessDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "correlationId": { "type": "string", "minLength": 1 },
+    "idempotencyKey": { "type": "string", "minLength": 1 },
+    "payload": { "$ref": "../api/garam-sale-command.v1.schema.json" }
+  }
+}
