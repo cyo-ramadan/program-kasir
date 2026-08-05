@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "maxi-garam-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ENVIRONMENT": "staging",
+    "INTEGRATION_CONTRACT_STATUS": "STAGED",
+    "ALLOWED_ORIGIN": "https://REPLACE_WITH_GARAM_SITE_ORIGIN"
+  },
+  "d1_databases": [{
+    "binding": "GARAM_DB",
+    "database_name": "maxi-garam-pos",
+    "database_id": "REPLACE_WITH_GARAM_D1_DATABASE_ID"
+  }],
+  "queues": {
+    "producers": [{ "binding": "INTEGRATION_QUEUE", "queue": "maxi-integration-events" }]
+  },
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}
