@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "stage": "github_api",
+  "requestFile": "repo-requests/ikan-galeh-1786015085013.json",
+  "repositoryName": "ikan-galeh",
+  "visibility": "private",
+  "httpStatus": 201,
+  "repositoryUrl": "https://github.com/cyo-ramadan/ikan-galeh"
+}
