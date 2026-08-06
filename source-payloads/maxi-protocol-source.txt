@@ -17,6 +17,7 @@ This repository is the canonical source of truth. Google Drive remains the human
 6. [Integration Contract](standards/INTEGRATION_CONTRACT.md)
 7. [Module Manual Template](templates/MODULE_MANUAL_TEMPLATE.md)
 8. [Coding and Naming Standard](standards/CODING_AND_NAMING.md)
+9. [GitHub Automation Runbook](runbooks/GITHUB_AUTOMATION.md)
 
 ## Mandatory synchronization
 
@@ -59,6 +60,8 @@ FILE — CHANGELOG.md
 - Retained Google Drive as the human-readable mirror.
 - Added mandatory GitHub–Drive synchronization policy.
 - Added SaaS multi-tenant architecture and isolation rules.
+- Added automated protocol validation and GitHub automation runbook.
+- Marked the private GitHub Wiki publishing path inactive; canonical Markdown remains Plan B.
 
 FILE — constitution/MAXI_ENGINEERING_CONSTITUTION.md
 MAXI AI Engineering Constitution
@@ -900,7 +903,9 @@ const requiredFiles = [
   "standards/CODING_AND_NAMING.md",
   "templates/MODULE_MANUAL_TEMPLATE.md",
   "SYNC_POLICY.md",
-  "CHANGELOG.md"
+  "CHANGELOG.md",
+  "runbooks/GITHUB_AUTOMATION.md",
+  ".github/workflows/validate-protocol.yml"
 ];
 for (const file of requiredFiles) {
   if (!fs.existsSync(file)) throw new Error(`MISSING_PROTOCOL_FILE: ${file}`);
@@ -920,4 +925,74 @@ FILE — package.json
     "test": "npm run check"
   }
 }
+
+FILE — runbooks/GITHUB_AUTOMATION.md
+# GitHub Automation Runbook
+
+Status: ACTIVE  
+Authority: Bos Cyo
+
+## Purpose
+
+This runbook records the reusable mechanism used by Karen and future AI sessions to create repositories, import regular source code, and publish privileged protocol changes without requesting plaintext credentials in chat.
+
+## Credential map
+
+| Actions secret | Credential type and scope | Authorized use |
+|---|---|---|
+| `MAXI_REPO_CREATOR_TOKEN` | Fine-grained PAT; repository access as configured; Administration: read/write; Contents: read/write; Metadata: read | Create repositories and import ordinary source files. It is not used to publish GitHub Actions workflows. |
+| `MAXI_WIKI_TOKEN` | Legacy secret name containing a classic PAT with `repo` and `workflow` scopes | Privileged publishing of `maxi-protocol`, including files under `.github/workflows/`. The name is retained to avoid rotating a working secret. It is not an active Wiki publisher. |
+
+Secrets live only in the GitHub Actions secrets of `cyo-ramadan/program-kasir`. They must never be pasted into chat, committed, printed, included in reports, or exposed in logs.
+
+## Automation bridges
+
+| Intent | Request path | Result path | Credential |
+|---|---|---|---|
+| Create repository | `repo-requests/*.json` | `repo-results/*.json` | `MAXI_REPO_CREATOR_TOKEN` |
+| Import ordinary source | `source-requests/*.json` | `source-results/*.json` | `MAXI_REPO_CREATOR_TOKEN` |
+| Publish canonical protocol | `protocol-requests/*.json` | `protocol-results/*.json` | `MAXI_WIKI_TOKEN` |
+
+The request commit triggers its matching workflow. Every workflow must produce a sanitized result file with `success`, `stage`, target repository, and error detail when applicable.
+
+## Protocol publishing sequence
+
+1. Update `source-payloads/maxi-protocol-source.txt`.
+2. Ensure each section uses the exact delimiter `FILE — relative/path`.
+3. Run or request protocol publication through `protocol-requests/*.json`.
+4. The publisher reconstructs the repository in a temporary directory.
+5. The publisher runs `npm test`; failed validation blocks the push.
+6. The publisher pushes the complete snapshot to `cyo-ramadan/maxi-protocol`.
+7. Verify `protocol-results/*.json` reports `success: true` and `validation: PASS`.
+8. Synchronize the semantic documentation change to the mapped Google Drive document.
+9. Record the change in `CHANGELOG.md`.
+
+## Canonical order and recovery
+
+GitHub canonical Markdown is written first. Google Drive is the human-readable mirror and is synchronized immediately afterward. If publishing fails, inspect the sanitized result, repair the payload or workflow, and submit a new request. Never weaken validation merely to obtain PASS.
+
+## Inactive path
+
+Private GitHub Wiki publishing is INACTIVE. The canonical protocol remains ordinary Markdown files inside `maxi-protocol`.
+
+FILE — .github/workflows/validate-protocol.yml
+name: Validate MAXI Protocol
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
 
