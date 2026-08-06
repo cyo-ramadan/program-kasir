@@ -1,0 +1,7 @@
+{
+  "repositoryName": "maxi-protocol",
+  "payloadPath": "source-payloads/maxi-protocol-source.txt",
+  "requestedBy": "Bos Cyo",
+  "purpose": "Publish canonical protocol with CI validation and GitHub automation runbook",
+  "requestedAt": "2026-08-06T05:10:00Z"
+}
