@@ -1,0 +1,69 @@
+name: MAXI Source Loader
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "source-requests/*.json"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load source into target repository
+        env:
+          GH_TOKEN: ${{ secrets.MAXI_REPO_CREATOR_TOKEN }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, re, shutil, subprocess, sys, tempfile, zipfile
+          from pathlib import Path
+
+          request_file = max(Path("source-requests").glob("*.json"), key=lambda p: p.stat().st_mtime)
+          request = json.loads(request_file.read_text())
+          target = request["repositoryName"]
+          payload = Path(request["payloadPath"])
+          payload_type = request["payloadType"]
+          work = Path(tempfile.mkdtemp())
+          source = work / "source"
+          source.mkdir()
+
+          if payload_type == "zip-base64":
+              archive = work / "source.zip"
+              archive.write_bytes(base64.b64decode(payload.read_text()))
+              with zipfile.ZipFile(archive) as bundle:
+                  bundle.extractall(source)
+              children = list(source.iterdir())
+              if len(children) == 1 and children[0].is_dir():
+                  nested = children[0]
+                  flattened = work / "flattened"
+                  shutil.move(str(nested), flattened)
+                  shutil.rmtree(source)
+                  source = flattened
+          elif payload_type == "maxi-source-document":
+              text = payload.read_text(encoding="utf-8-sig").replace("\r\n", "\n")
+              matches = list(re.finditer(r"(?m)^FILE — (.+?)\n", text))
+              if not matches:
+                  raise RuntimeError("SOURCE_SECTIONS_NOT_FOUND")
+              for index, match in enumerate(matches):
+                  destination = source / match.group(1).strip()
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+                  destination.write_text(text[match.end():end].strip() + "\n")
+          else:
+              raise RuntimeError("UNSUPPORTED_PAYLOAD_TYPE")
+
+          subprocess.run(["git", "init", "-b", "main"], cwd=source, check=True)
+          subprocess.run(["git", "config", "user.name", "MAXI Source Loader"], cwd=source, check=True)
+          subprocess.run(["git", "config", "user.email", "actions@users.noreply.github.com"], cwd=source, check=True)
+          subprocess.run(["git", "add", "."], cwd=source, check=True)
+          subprocess.run(["git", "commit", "-m", request.get("commitMessage", "chore: import source from Google Drive")], cwd=source, check=True)
+          remote = f"https://x-access-token:{os.environ['GH_TOKEN']}@github.com/cyo-ramadan/{target}.git"
+          subprocess.run(["git", "remote", "add", "origin", remote], cwd=source, check=True)
+          subprocess.run(["git", "push", "-u", "origin", "main"], cwd=source, check=True)
+          PY
