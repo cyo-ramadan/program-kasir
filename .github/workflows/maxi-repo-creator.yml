@@ -16,43 +16,101 @@ jobs:
     steps:
       - name: Check out request
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Create repository and record result
+      - name: Create repository
         env:
           GH_TOKEN: ${{ secrets.MAXI_REPO_CREATOR_TOKEN }}
         shell: bash
         run: |
-          set -euo pipefail
-          REQUEST_FILE="$(git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" | grep '^repo-requests/.*\.json$' | head -n 1)"
-          test -n "$REQUEST_FILE"
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
 
-          REPOSITORY_NAME="$(jq -r '.repositoryName' "$REQUEST_FILE")"
-          VISIBILITY="$(jq -r '.visibility // "private"' "$REQUEST_FILE")"
-          DESCRIPTION="$(jq -r '.description // ""' "$REQUEST_FILE")"
+          result = {"success": False, "stage": "initialization"}
+          result_path = Path("repo-results") / f"{os.environ['GITHUB_RUN_ID']}.json"
+          result_path.parent.mkdir(parents=True, exist_ok=True)
 
-          [[ "$REPOSITORY_NAME" =~ ^[A-Za-z0-9._-]+$ ]]
-          [[ "$VISIBILITY" == "private" || "$VISIBILITY" == "public" ]]
-          test -n "$GH_TOKEN"
+          try:
+              request_files = sorted(Path("repo-requests").glob("*.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+              if not request_files:
+                  raise RuntimeError("REQUEST_FILE_NOT_FOUND")
 
-          if [[ "$VISIBILITY" == "private" ]]; then
-            PRIVATE_VALUE=true
-          else
-            PRIVATE_VALUE=false
-          fi
+              request_data = json.loads(request_files[0].read_text())
+              repository_name = request_data.get("repositoryName", "")
+              visibility = request_data.get("visibility", "private")
+              description = request_data.get("description", "")
 
-          jq -n --arg name "$REPOSITORY_NAME" --arg description "$DESCRIPTION" --argjson private "$PRIVATE_VALUE"             '{name: $name, description: $description, private: $private, auto_init: false}' > api-request.json
+              result.update({
+                  "stage": "validation",
+                  "requestFile": str(request_files[0]),
+                  "repositoryName": repository_name,
+                  "visibility": visibility,
+              })
 
-          HTTP_STATUS="$(curl --silent --show-error --output api-response.json --write-out '%{http_code}'             --request POST             --header "Accept: application/vnd.github+json"             --header "Authorization: Bearer $GH_TOKEN"             --header "X-GitHub-Api-Version: 2022-11-28"             https://api.github.com/user/repos             --data-binary @api-request.json)"
+              if not re.fullmatch(r"[A-Za-z0-9._-]+", repository_name):
+                  raise RuntimeError("INVALID_REPOSITORY_NAME")
+              if visibility not in {"private", "public"}:
+                  raise RuntimeError("INVALID_VISIBILITY")
 
-          mkdir -p repo-results
-          jq -n             --arg repositoryName "$REPOSITORY_NAME"             --arg httpStatus "$HTTP_STATUS"             --argjson response "$(cat api-response.json)"             '{repositoryName: $repositoryName, httpStatus: $httpStatus, response: $response}'             > "repo-results/$GITHUB_RUN_ID.json"
+              token = os.environ.get("GH_TOKEN", "")
+              if not token:
+                  raise RuntimeError("SECRET_NOT_AVAILABLE")
 
+              payload = json.dumps({
+                  "name": repository_name,
+                  "description": description,
+                  "private": visibility == "private",
+                  "auto_init": False,
+              }).encode()
+
+              api_request = urllib.request.Request(
+                  "https://api.github.com/user/repos",
+                  data=payload,
+                  method="POST",
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "Content-Type": "application/json",
+                  },
+              )
+
+              result["stage"] = "github_api"
+              try:
+                  with urllib.request.urlopen(api_request) as response:
+                      response_data = json.loads(response.read())
+                      result.update({
+                          "success": response.status == 201,
+                          "httpStatus": response.status,
+                          "repositoryUrl": response_data.get("html_url"),
+                      })
+              except urllib.error.HTTPError as error:
+                  error_data = json.loads(error.read() or b"{}")
+                  result.update({
+                      "httpStatus": error.code,
+                      "error": error_data.get("message", "GITHUB_API_ERROR"),
+                  })
+
+          except Exception as error:
+              result["error"] = str(error)
+          finally:
+              result_path.write_text(json.dumps(result, indent=2) + "\n")
+
+          if not result["success"]:
+              sys.exit(1)
+          PY
+
+      - name: Publish sanitized result
+        if: always()
+        shell: bash
+        run: |
           git config user.name "MAXI Repository Creator"
           git config user.email "actions@users.noreply.github.com"
-          git add "repo-results/$GITHUB_RUN_ID.json"
-          git commit -m "chore: record repository creation result"
+          git add repo-results/
+          git commit -m "chore: record repository creation result" || exit 0
           git push
-
-          [[ "$HTTP_STATUS" == "201" ]]
