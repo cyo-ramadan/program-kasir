@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "stage": "github_api",
+  "requestFile": "repo-requests/2026-08-06-warehouse.json",
+  "repositoryName": "warehouse",
+  "visibility": "private",
+  "httpStatus": 422,
+  "error": "Repository creation failed."
+}
