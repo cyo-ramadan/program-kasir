@@ -1,0 +1,6 @@
+{
+  "repositoryName": "garam",
+  "payloadPath": "source-payloads/garam.zip.b64",
+  "payloadType": "zip-base64",
+  "commitMessage": "chore: synchronize POS Grosir Garam MAXI source"
+}
