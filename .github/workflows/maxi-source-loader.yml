@@ -59,6 +59,10 @@ jobs:
                       shutil.move(str(children[0]), flattened)
                       shutil.rmtree(source)
                       source = flattened
+              elif payload_type == "single-file":
+                  destination = source / request.get("outputPath", "index.html")
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  destination.write_text(payload.read_text(encoding="utf-8-sig"), encoding="utf-8")
               elif payload_type == "maxi-source-document":
                   text = payload.read_text(encoding="utf-8-sig").replace("\r\n", "\n")
                   matches = list(re.finditer(r"(?m)^FILE — (.+?)\n", text))
