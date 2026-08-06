@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "stage": "git_push",
+  "requestFile": "source-requests/maxi-protocol-sync-1786018146409.json",
+  "repositoryName": "maxi-protocol",
+  "payloadType": "maxi-source-document",
+  "error": "Command '['git', 'push', '--force', '-u', 'origin', 'main']' returned non-zero exit status 1."
+}
