@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Load source into target repository
         env:
@@ -29,7 +31,14 @@ jobs:
           result_path.parent.mkdir(exist_ok=True)
 
           try:
-              request_file = max(Path("source-requests").glob("*.json"), key=lambda p: p.stat().st_mtime)
+              changed_files = subprocess.check_output(
+                  ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD", "--", "source-requests"],
+                  text=True,
+              ).splitlines()
+              request_files = [Path(path) for path in changed_files if path.endswith(".json")]
+              if not request_files:
+                  raise RuntimeError("REQUEST_FILE_NOT_FOUND")
+              request_file = request_files[-1]
               request = json.loads(request_file.read_text())
               target = request["repositoryName"]
               payload = Path(request["payloadPath"])
@@ -78,7 +87,7 @@ jobs:
                   subprocess.run(command, cwd=source, check=True, capture_output=True, text=True)
               remote = f"https://x-access-token:{os.environ['GH_TOKEN']}@github.com/cyo-ramadan/{target}.git"
               subprocess.run(["git", "remote", "add", "origin", remote], cwd=source, check=True, capture_output=True, text=True)
-              subprocess.run(["git", "push", "-u", "origin", "main"], cwd=source, check=True, capture_output=True, text=True)
+              subprocess.run(["git", "push", "--force", "-u", "origin", "main"], cwd=source, check=True, capture_output=True, text=True)
               result.update({"success": True, "stage": "complete", "repositoryUrl": f"https://github.com/cyo-ramadan/{target}", "fileCount": sum(1 for p in source.rglob("*") if p.is_file())})
           except Exception as error:
               result["error"] = str(error)
