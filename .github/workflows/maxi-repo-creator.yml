@@ -29,6 +29,7 @@ jobs:
           import sys
           import urllib.error
           import urllib.request
+          import subprocess
           from pathlib import Path
 
           result = {"success": False, "stage": "initialization"}
@@ -36,11 +37,15 @@ jobs:
           result_path.parent.mkdir(parents=True, exist_ok=True)
 
           try:
-              request_files = sorted(Path("repo-requests").glob("*.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+              changed_files = subprocess.check_output(
+                  ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD", "--", "repo-requests"],
+                  text=True,
+              ).splitlines()
+              request_files = [Path(path) for path in changed_files if path.endswith(".json")]
               if not request_files:
                   raise RuntimeError("REQUEST_FILE_NOT_FOUND")
 
-              request_data = json.loads(request_files[0].read_text())
+              request_data = json.loads(request_files[-1].read_text())
               repository_name = request_data.get("repositoryName", "")
               visibility = request_data.get("visibility", "private")
               description = request_data.get("description", "")
