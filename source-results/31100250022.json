@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "stage": "complete",
+  "requestFile": "source-requests/maxi-protocol-retry-1786018201695.json",
+  "repositoryName": "maxi-protocol",
+  "payloadType": "maxi-source-document",
+  "repositoryUrl": "https://github.com/cyo-ramadan/maxi-protocol",
+  "fileCount": 60
+}
