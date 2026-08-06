@@ -16,5 +16,5 @@
 - Rollback/recovery: remove the artifact; use Reset Demo Data to recover local state.
 - Known issues: local storage durability and multi-tab concurrency; see `KNOWN_ISSUES.md`.
 - Open risks: no authentication, server persistence, approved Accounting/Inventory integration, hardware scanner adapter, refunds, or multi-device synchronization.
-- Required approvals: Elle architecture review before shared integration; approved contracts and mappings before Accounting/Inventory activation.
+- Approval bureaucracy: INACTIVE by Bos Cyo directive. Elle review is advisory and non-blocking; versioned contracts and mappings remain required before Accounting/Inventory activation.
 - Compliance: PASS for local prototype scope. Integrations remain NOT CONFIGURED.

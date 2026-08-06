@@ -17,4 +17,4 @@ Migration: validate locally with `npx wrangler d1 execute maxi-db --local --file
 
 Recovery: before remote execution, export or rely on the D1 backup captured for the operation. If the new empty table must be removed, use an approved forward recovery migration; do not delete an existing table containing data without an explicit data-retention decision.
 
-Required approval: Elle architecture review before production adoption; Bos Cyo decides unresolved architecture or data-ownership conflicts.
+Approval bureaucracy: INACTIVE by Bos Cyo directive. Elle architecture review is advisory and non-blocking; Bos Cyo decides unresolved architecture or data-ownership conflicts.

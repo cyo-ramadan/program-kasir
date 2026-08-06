@@ -17,4 +17,4 @@ Emergency stop: close the page. No background worker or network delivery runs in
 
 D1 schema validation: run `npx wrangler d1 execute maxi-db --local --file=./schema.sql`, then inspect with `npx wrangler d1 execute maxi-db --local --command="SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'products'"`.
 
-Remote migration: do not execute `schema.sql` remotely until Elle has reviewed ADR-002 and Bos Cyo has approved the production operation. Capture/export a recoverable database state first, then use the approved Cloudflare D1 remote execution procedure.
+Remote migration: Elle review is advisory and non-blocking. Execute `schema.sql` remotely only under an explicit Bos Cyo task instruction, after capturing/exporting a recoverable database state.

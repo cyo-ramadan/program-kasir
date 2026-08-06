@@ -18,4 +18,4 @@ Compatibility: additive new program; Program Ikan remains unchanged.
 Recovery: remove the new artifact or reset its namespaced local snapshot.
 
 
-Required approval: Bos Cyo for promotion from PROPOSED to ACTIVE; Elle architecture review before shared integration work.
+Approval bureaucracy: INACTIVE by Bos Cyo directive. Elle architecture review is advisory and non-blocking; explicit contracts and technical gates remain active for shared integration work.
