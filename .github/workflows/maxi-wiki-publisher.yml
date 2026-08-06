@@ -93,6 +93,12 @@ jobs:
               })
           except Exception as error:
               result["error"] = str(error)
+              if isinstance(error, subprocess.CalledProcessError):
+                  detail = (error.stderr or error.stdout or "")[-2000:]
+                  token = os.environ.get("GH_TOKEN", "")
+                  if token:
+                      detail = detail.replace(token, "***")
+                  result["detail"] = detail
           finally:
               result_path.write_text(json.dumps(result, indent=2) + "\n")
 
