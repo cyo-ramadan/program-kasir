@@ -1,0 +1,117 @@
+name: MAXI Protocol Publisher
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "protocol-requests/*.json"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-protocol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Validate request and publish protocol
+        env:
+          GH_TOKEN: ${{ secrets.MAXI_WIKI_TOKEN }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, sys, tempfile
+          from pathlib import Path
+
+          result = {"success": False, "stage": "initialization", "validation": "NOT_RUN"}
+          result_path = Path("protocol-results") / f"{os.environ['GITHUB_RUN_ID']}.json"
+          result_path.parent.mkdir(exist_ok=True)
+
+          try:
+              changed = subprocess.check_output(
+                  ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD", "--", "protocol-requests"],
+                  text=True,
+              ).splitlines()
+              requests = [Path(path) for path in changed if path.endswith(".json")]
+              if not requests:
+                  raise RuntimeError("REQUEST_FILE_NOT_FOUND")
+
+              request_file = requests[-1]
+              request = json.loads(request_file.read_text())
+              repository = request["repositoryName"]
+              payload = Path(request["payloadPath"])
+              if repository != "maxi-protocol":
+                  raise RuntimeError("UNAUTHORIZED_PROTOCOL_TARGET")
+              if not payload.is_file():
+                  raise RuntimeError("PAYLOAD_FILE_NOT_FOUND")
+
+              result.update({"requestFile": str(request_file), "repositoryName": repository, "stage": "build_snapshot"})
+              text = payload.read_text(encoding="utf-8-sig").replace("\r\n", "\n")
+              matches = list(re.finditer(r"(?m)^FILE — (.+?)\n", text))
+              if not matches:
+                  raise RuntimeError("SOURCE_FILES_NOT_FOUND")
+
+              work = Path(tempfile.mkdtemp())
+              for index, match in enumerate(matches):
+                  relative = match.group(1).strip()
+                  destination = work / relative
+                  if destination.resolve() == work.resolve() or work.resolve() not in destination.resolve().parents:
+                      raise RuntimeError("INVALID_PAYLOAD_PATH")
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+                  destination.write_text(text[match.end():end].strip() + "\n")
+
+              result["stage"] = "validation"
+              validation = subprocess.run(["npm", "test"], cwd=work, check=True, capture_output=True, text=True)
+              result["validation"] = "PASS"
+              result["validationOutput"] = (validation.stdout or "")[-1000:]
+
+              result["stage"] = "git_push"
+              for command in [
+                  ["git", "init", "-b", "main"],
+                  ["git", "config", "user.name", "MAXI Protocol Publisher"],
+                  ["git", "config", "user.email", "actions@users.noreply.github.com"],
+                  ["git", "add", "."],
+                  ["git", "commit", "-m", "docs: publish canonical MAXI protocol"],
+              ]:
+                  subprocess.run(command, cwd=work, check=True, capture_output=True, text=True)
+
+              remote = f"https://x-access-token:{os.environ['GH_TOKEN']}@github.com/cyo-ramadan/{repository}.git"
+              subprocess.run(["git", "remote", "add", "origin", remote], cwd=work, check=True, capture_output=True, text=True)
+              push = subprocess.run(["git", "push", "--force", "-u", "origin", "main"], cwd=work, check=True, capture_output=True, text=True)
+              commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=work, text=True).strip()
+              result.update({
+                  "success": True,
+                  "stage": "complete",
+                  "commitSha": commit_sha,
+                  "fileCount": len(matches),
+                  "repositoryUrl": f"https://github.com/cyo-ramadan/{repository}",
+              })
+          except Exception as error:
+              result["error"] = str(error)
+              if isinstance(error, subprocess.CalledProcessError):
+                  detail = (error.stderr or error.stdout or "")[-2000:]
+                  token = os.environ.get("GH_TOKEN", "")
+                  if token:
+                      detail = detail.replace(token, "***")
+                  result["detail"] = detail
+          finally:
+              result_path.write_text(json.dumps(result, indent=2) + "\n")
+
+          if not result["success"]:
+              sys.exit(1)
+          PY
+
+      - name: Publish sanitized protocol result
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "MAXI Protocol Publisher"
+          git config user.email "actions@users.noreply.github.com"
+          git add protocol-results/
+          git commit -m "chore: record protocol publication result" || exit 0
+          git pull --rebase
+          git push
