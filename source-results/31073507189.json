@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "stage": "complete",
+  "requestFile": "source-requests/warehouse-sync-1785993226141.json",
+  "repositoryName": "warehouse",
+  "payloadType": "zip-base64",
+  "repositoryUrl": "https://github.com/cyo-ramadan/warehouse",
+  "fileCount": 148
+}
