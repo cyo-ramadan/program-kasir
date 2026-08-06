@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "stage": "github_api",
+  "requestFile": "repo-requests/2026-08-06-garam-1785992532105.json",
+  "repositoryName": "garam",
+  "visibility": "private",
+  "httpStatus": 422,
+  "error": "Repository creation failed."
+}
