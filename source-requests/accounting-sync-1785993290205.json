@@ -1,0 +1,6 @@
+{
+  "repositoryName": "accounting",
+  "payloadPath": "source-payloads/accounting-source.txt",
+  "payloadType": "maxi-source-document",
+  "commitMessage": "chore: synchronize MAXI Accounting Foundation source"
+}
