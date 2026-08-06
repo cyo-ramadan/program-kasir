@@ -1,0 +1,1417 @@
+﻿MAXI Accounting Foundation v0.1.0 — Full Source Code
+Canonical runtime source, automated core test, and package configuration. Copy each section using its FILE heading as the target path.
+
+
+FILE — src/index.html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MAXI Accounting Foundation: double-entry journal, ledger, trial balance, and local audit trail.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>MAXI Accounting Foundation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+        <div><span>MAXI</span><strong>Accounting</strong></div>
+      </div>
+      <nav aria-label="Accounting navigation">
+        <button class="nav-button active" data-view="dashboard"><span>01</span> Dashboard</button>
+        <button class="nav-button" data-view="accounts"><span>02</span> Accounts</button>
+        <button class="nav-button" data-view="journals"><span>03</span> Journal</button>
+        <button class="nav-button" data-view="ledger"><span>04</span> General Ledger</button>
+        <button class="nav-button" data-view="trial"><span>05</span> Trial Balance</button>
+        <button class="nav-button" data-view="audit"><span>06</span> Audit & Data</button>
+      </nav>
+      <div class="sidebar-note">
+        <span>Foundation v0.1.0</span>
+        <p>Local prototype. No external integration or production database.</p>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div><span class="eyebrow">MAXI internal software ecosystem</span><h1>Financial facts, clearly posted.</h1></div>
+        <span class="environment-chip">LOCAL FOUNDATION</span>
+      </header>
+      <div id="notice" class="notice" role="status" aria-live="polite"></div>
+      <div id="appView"></div>
+    </main>
+  </div>
+  <script src="accounting-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+FILE — src/styles.css
+:root {
+  color-scheme: light;
+  --ink: #17211b;
+  --muted: #66736b;
+  --paper: #f4f1e9;
+  --panel: #fffdf8;
+  --line: #ded9cc;
+  --forest: #173f35;
+  --forest-soft: #dfece5;
+  --lime: #cce85b;
+  --danger: #9f3d35;
+  --danger-soft: #f7e2df;
+  --shadow: 0 18px 55px rgba(35, 50, 41, 0.09);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+
+
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: 255px 1fr; }
+.sidebar { position: sticky; top: 0; height: 100vh; padding: 28px 20px; display: flex; flex-direction: column; color: #f7f4e9; background: var(--forest); }
+.brand { display: flex; align-items: center; gap: 12px; margin: 0 8px 38px; }
+.brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: var(--lime); color: var(--forest); font-weight: 900; }
+.brand span, .brand strong { display: block; }
+.brand span { font-size: 11px; letter-spacing: .18em; opacity: .7; }
+.brand strong { font-size: 18px; }
+nav { display: grid; gap: 7px; }
+.nav-button { width: 100%; padding: 13px 14px; display: flex; gap: 12px; align-items: center; border: 0; border-radius: 12px; color: #d9e4dd; background: transparent; text-align: left; }
+.nav-button span { font-size: 10px; letter-spacing: .12em; opacity: .55; }
+.nav-button:hover, .nav-button.active { color: #fff; background: rgba(255,255,255,.11); }
+.nav-button.active::after { content: ""; width: 7px; height: 7px; margin-left: auto; border-radius: 50%; background: var(--lime); }
+.sidebar-note { margin-top: auto; padding: 16px; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; }
+.sidebar-note span { color: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: .1em; }
+.sidebar-note p { margin: 8px 0 0; color: #c2d0c8; font-size: 12px; line-height: 1.5; }
+
+
+main { min-width: 0; padding: 28px clamp(22px, 4vw, 64px) 64px; }
+.topbar, .page-heading, .panel-title, .journal-card, .journal-card-main, .editor-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.topbar { margin-bottom: 34px; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-family: Georgia, serif; font-size: clamp(25px, 3vw, 42px); font-weight: 500; }
+h2 { margin: 3px 0 0; font-family: Georgia, serif; font-size: 32px; }
+h3 { margin: 3px 0 0; font-size: 18px; }
+.eyebrow { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.environment-chip, .status-pill { display: inline-flex; align-items: center; white-space: nowrap; border-radius: 999px; font-size: 10px; font-weight: 850; letter-spacing: .08em; }
+.environment-chip { padding: 9px 12px; color: var(--forest); background: var(--lime); }
+.status-pill { padding: 7px 10px; color: var(--forest); background: #e8e3d8; }
+.status-pill.ok { color: #1c5a46; background: var(--forest-soft); }
+.status-pill.danger { color: var(--danger); background: var(--danger-soft); }
+.page-heading { margin-bottom: 20px; }
+
+
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+.metric, .panel { border: 1px solid var(--line); border-radius: 18px; background: var(--panel); box-shadow: var(--shadow); }
+.metric { padding: 20px; }
+.metric span, .metric small, .account-row small, .journal-card small, .audit-row span, .audit-row small { display: block; color: var(--muted); }
+.metric span { font-size: 12px; }
+.metric strong { display: block; margin: 9px 0 4px; font-family: Georgia, serif; font-size: 27px; }
+.metric small { font-size: 11px; }
+.panel { padding: 22px; margin-bottom: 16px; }
+.panel-title { margin-bottom: 18px; }
+.two-column { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(420px, 1.2fr); gap: 16px; align-items: start; }
+
+
+.form-stack { display: grid; gap: 15px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label { display: grid; gap: 7px; color: #39463e; font-size: 12px; font-weight: 750; }
+input, select { min-width: 0; width: 100%; padding: 11px 12px; border: 1px solid #cbc5b8; border-radius: 10px; color: var(--ink); background: #fff; outline: none; }
+input:focus, select:focus { border-color: #548470; box-shadow: 0 0 0 3px rgba(84,132,112,.14); }
+.primary-button, .ghost-button, .danger-button, .muted-button, .icon-button, .file-button { border: 0; border-radius: 10px; font-weight: 800; }
+.primary-button, .ghost-button, .danger-button, .muted-button { padding: 10px 14px; }
+.primary-button { color: #fff; background: var(--forest); }
+.primary-button:hover { background: #0e3028; }
+.ghost-button { color: var(--forest); background: var(--forest-soft); }
+.danger-button { color: var(--danger); background: var(--danger-soft); }
+.muted-button { color: var(--muted); background: #e9e6de; }
+.icon-button { width: 32px; height: 32px; color: var(--danger); background: transparent; font-size: 21px; }
+.file-button { padding: 11px 14px; text-align: center; color: var(--forest); background: var(--forest-soft); cursor: pointer; }
+.file-button input { display: none; }
+.helper { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+
+.account-list, .journal-list, .audit-list { display: grid; gap: 10px; }
+.account-row, .audit-row { padding: 13px 0; border-bottom: 1px solid var(--line); }
+.account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.account-row:last-child, .audit-row:last-child { border-bottom: 0; }
+.account-row small, .journal-card small, .audit-row span, .audit-row small { margin-top: 4px; font-size: 11px; }
+.journal-editor { border-top: 4px solid var(--lime); }
+.journal-card { padding: 15px; border: 1px solid var(--line); border-radius: 13px; }
+.journal-card-main { justify-content: flex-start; }
+.journal-actions { display: flex; gap: 7px; }
+.editor-actions { justify-content: flex-end; }
+
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { padding: 10px; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-align: left; text-transform: uppercase; border-bottom: 1px solid var(--line); }
+td { padding: 12px 10px; border-bottom: 1px solid #ebe7df; vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+.journal-lines th:nth-child(2), .journal-lines th:nth-child(3) { min-width: 170px; }
+.journal-lines th:first-child { min-width: 230px; }
+.total-row td { border-top: 2px solid var(--ink); font-weight: 900; }
+.ledger-selector { max-width: 430px; margin-bottom: 18px; }
+.empty-state { padding: 30px 16px; border: 1px dashed #c9c2b5; border-radius: 12px; color: var(--muted); text-align: center; }
+.notice { position: fixed; z-index: 10; right: 28px; top: 24px; max-width: min(420px, calc(100vw - 40px)); padding: 13px 16px; border-radius: 11px; color: #fff; background: var(--forest); box-shadow: var(--shadow); opacity: 0; transform: translateY(-10px); pointer-events: none; transition: .2s ease; }
+.notice.show { opacity: 1; transform: translateY(0); }
+.notice[data-tone="error"] { background: var(--danger); }
+.fatal { max-width: 720px; border-top: 4px solid var(--danger); }
+
+
+@media (max-width: 980px) {
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+  .two-column { grid-template-columns: 1fr; }
+}
+
+
+@media (max-width: 720px) {
+  .app-shell { display: block; }
+  .sidebar { position: static; width: 100%; height: auto; padding: 18px; }
+  .brand { margin-bottom: 16px; }
+  nav { grid-template-columns: repeat(3, 1fr); }
+  .nav-button { justify-content: center; padding: 10px; font-size: 0; }
+  .nav-button span { font-size: 11px; }
+  .sidebar-note { display: none; }
+  main { padding: 22px 16px 44px; }
+  .topbar { align-items: flex-start; }
+  .topbar .eyebrow { display: none; }
+  .environment-chip { display: none; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .page-heading, .panel-title, .journal-card { align-items: flex-start; flex-direction: column; }
+  .journal-actions { width: 100%; }
+  .journal-actions button { flex: 1; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+
+FILE — src/accounting-core.js
+(function attachMaxiAccountingCore(root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  root.MaxiAccountingCore = api;
+})(typeof globalThis !== "undefined" ? globalThis : this, function createMaxiAccountingCore() {
+  "use strict";
+
+
+  const SCHEMA_VERSION = "1.0.0";
+  const MODULE_VERSION = "0.1.0";
+  const ACCOUNT_TYPES = Object.freeze(["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"]);
+  const JOURNAL_STATUSES = Object.freeze(["DRAFT", "POSTED"]);
+
+
+  class AccountingError extends Error {
+    constructor(code, message, details = {}) {
+      super(message);
+      this.name = "AccountingError";
+      this.code = code;
+      this.details = details;
+    }
+  }
+
+
+  function fail(code, message, details) {
+    throw new AccountingError(code, message, details);
+  }
+
+
+  function createInitialState() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      moduleVersion: MODULE_VERSION,
+      nextAccountNumber: 1,
+      nextJournalNumber: 1,
+      nextAuditNumber: 1,
+      accounts: [],
+      journals: [],
+      auditEntries: []
+    };
+  }
+
+
+  function cloneState(state) {
+    return JSON.parse(JSON.stringify(state));
+  }
+
+
+  function normalizeText(value) {
+    return String(value ?? "").trim();
+  }
+
+
+  function normalizeCode(value) {
+    return normalizeText(value).toUpperCase();
+  }
+
+
+  function assertIntegerAmount(value, fieldName) {
+    const numberValue = Number(value);
+    if (!Number.isSafeInteger(numberValue) || numberValue < 0) {
+      fail("AMOUNT_INVALID", `${fieldName} must be a non-negative safe integer.`, { fieldName, value });
+    }
+    return numberValue;
+  }
+
+
+  function assertBusinessDate(value) {
+    const businessDate = normalizeText(value);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(businessDate);
+    if (!match) {
+      fail("JOURNAL_DATE_REQUIRED", "Business date is required in YYYY-MM-DD format.");
+    }
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const parsedDate = new Date(Date.UTC(year, month - 1, day));
+    if (
+      parsedDate.getUTCFullYear() !== year ||
+      parsedDate.getUTCMonth() !== month - 1 ||
+      parsedDate.getUTCDate() !== day
+    ) {
+      fail("JOURNAL_DATE_INVALID", "Business date must be a valid calendar date.", { businessDate });
+    }
+    return businessDate;
+  }
+
+
+  function formatSequence(prefix, numberValue) {
+    return `${prefix}-${String(numberValue).padStart(6, "0")}`;
+  }
+
+
+  function appendAudit(state, action, entityType, entityId, details, occurredAt) {
+    const auditEntryId = formatSequence("AUD", state.nextAuditNumber);
+    state.nextAuditNumber += 1;
+    state.auditEntries.push({
+      auditEntryId,
+      action,
+      entityType,
+      entityId,
+      occurredAt,
+      details
+    });
+  }
+
+
+  function assertState(state) {
+    if (!state || typeof state !== "object" || Array.isArray(state)) {
+      fail("STATE_INVALID", "Accounting state must be an object.");
+    }
+    if (state.schemaVersion !== SCHEMA_VERSION) {
+      fail("STATE_SCHEMA_UNSUPPORTED", `Expected schema ${SCHEMA_VERSION}.`, {
+        actualSchemaVersion: state.schemaVersion
+      });
+    }
+    for (const fieldName of ["accounts", "journals", "auditEntries"]) {
+      if (!Array.isArray(state[fieldName])) fail("STATE_INVALID", `${fieldName} must be an array.`);
+    }
+    for (const fieldName of ["nextAccountNumber", "nextJournalNumber", "nextAuditNumber"]) {
+      if (!Number.isSafeInteger(state[fieldName]) || state[fieldName] < 1) {
+        fail("STATE_INVALID", `${fieldName} must be a positive safe integer.`);
+      }
+    }
+
+
+    const accountIdSet = new Set();
+    const accountCodeSet = new Set();
+    for (const account of state.accounts) {
+      if (!account.accountId || accountIdSet.has(account.accountId)) {
+        fail("STATE_INVALID", "Account IDs must be present and unique.");
+      }
+      const accountCode = normalizeCode(account.accountCode);
+      if (!accountCode || accountCodeSet.has(accountCode)) {
+        fail("STATE_INVALID", "Account codes must be present and unique.");
+      }
+      if (!ACCOUNT_TYPES.includes(account.accountType)) {
+        fail("STATE_INVALID", `Unsupported account type: ${account.accountType}`);
+      }
+      if (!normalizeText(account.accountName) || typeof account.isActive !== "boolean") {
+        fail("STATE_INVALID", "Every account requires a name and boolean isActive value.");
+      }
+      accountIdSet.add(account.accountId);
+      accountCodeSet.add(accountCode);
+    }
+
+
+    const journalIdSet = new Set();
+    const journalById = new Map();
+    for (const journal of state.journals) {
+      if (!journal.journalId || journalIdSet.has(journal.journalId)) {
+        fail("STATE_INVALID", "Journal IDs must be present and unique.");
+      }
+      journalIdSet.add(journal.journalId);
+      journalById.set(journal.journalId, journal);
+    }
+
+
+    const reversedJournalIdSet = new Set();
+    for (const journal of state.journals) {
+      if (!JOURNAL_STATUSES.includes(journal.journalStatus)) {
+        fail("STATE_INVALID", `Unsupported journal status: ${journal.journalStatus}`);
+      }
+      assertBusinessDate(journal.businessDate);
+      if (!normalizeText(journal.description)) fail("STATE_INVALID", "Journal description is required.");
+      if (!Array.isArray(journal.lines) || journal.lines.length < 2) {
+        fail("STATE_INVALID", "Journal lines must contain at least two entries.");
+      }
+      const journalLineIdSet = new Set();
+      for (const line of journal.lines) {
+        if (!line.journalLineId || journalLineIdSet.has(line.journalLineId)) {
+          fail("STATE_INVALID", "Journal line IDs must be present and unique within a journal.");
+        }
+        if (!accountIdSet.has(line.accountId)) {
+          fail("STATE_INVALID", `Journal references unknown account ${line.accountId}.`);
+        }
+        const debitAmountMinor = assertIntegerAmount(line.debitAmountMinor, "debitAmountMinor");
+        const creditAmountMinor = assertIntegerAmount(line.creditAmountMinor, "creditAmountMinor");
+        if ((debitAmountMinor > 0) === (creditAmountMinor > 0)) {
+          fail("STATE_INVALID", "Every journal line must contain debit or credit, exclusively.");
+        }
+        journalLineIdSet.add(line.journalLineId);
+      }
+      if (journal.journalStatus === "POSTED" && !calculateJournalBalance(journal).isBalanced) {
+        fail("STATE_INVALID", `Posted journal ${journal.journalId} is not balanced.`);
+      }
+      if (journal.reversalOfJournalId !== null) {
+        if (!journalIdSet.has(journal.reversalOfJournalId) || journal.reversalOfJournalId === journal.journalId) {
+          fail("STATE_INVALID", `Journal ${journal.journalId} has an invalid reversal reference.`);
+        }
+        if (
+          journal.journalStatus !== "POSTED" ||
+          journalById.get(journal.reversalOfJournalId)?.journalStatus !== "POSTED" ||
+          reversedJournalIdSet.has(journal.reversalOfJournalId)
+        ) {
+          fail("STATE_INVALID", "Reversal references must be unique and belong to posted journals.");
+        }
+        reversedJournalIdSet.add(journal.reversalOfJournalId);
+      }
+    }
+
+
+    const auditEntryIdSet = new Set();
+    for (const auditEntry of state.auditEntries) {
+      if (!auditEntry.auditEntryId || auditEntryIdSet.has(auditEntry.auditEntryId)) {
+        fail("STATE_INVALID", "Audit entry IDs must be present and unique.");
+      }
+      auditEntryIdSet.add(auditEntry.auditEntryId);
+    }
+    return state;
+  }
+
+
+  function addAccount(state, input, occurredAt) {
+    assertState(state);
+    const accountCode = normalizeCode(input.accountCode);
+    const accountName = normalizeText(input.accountName);
+    const accountType = normalizeCode(input.accountType);
+    if (!accountCode) fail("ACCOUNT_CODE_REQUIRED", "Account code is required.");
+    if (!accountName) fail("ACCOUNT_NAME_REQUIRED", "Account name is required.");
+    if (!ACCOUNT_TYPES.includes(accountType)) {
+      fail("ACCOUNT_TYPE_INVALID", "Account type is not supported.", { accountType });
+    }
+    if (state.accounts.some((account) => normalizeCode(account.accountCode) === accountCode)) {
+      fail("ACCOUNT_CODE_DUPLICATE", `Account code ${accountCode} already exists.`);
+    }
+
+
+    const nextState = cloneState(state);
+    const accountId = formatSequence("ACC", nextState.nextAccountNumber);
+    nextState.nextAccountNumber += 1;
+    nextState.accounts.push({
+      accountId,
+      accountCode,
+      accountName,
+      accountType,
+      isActive: true,
+      createdAt: occurredAt,
+      updatedAt: occurredAt
+    });
+    appendAudit(nextState, "ACCOUNT_CREATED", "ACCOUNT", accountId, { accountCode }, occurredAt);
+    return { state: nextState, accountId };
+  }
+
+
+  function updateAccount(state, accountId, input, occurredAt) {
+    assertState(state);
+    const account = state.accounts.find((candidate) => candidate.accountId === accountId);
+    if (!account) fail("ACCOUNT_NOT_FOUND", `Account ${accountId} was not found.`);
+    const accountName = normalizeText(input.accountName ?? account.accountName);
+    if (!accountName) fail("ACCOUNT_NAME_REQUIRED", "Account name is required.");
+
+
+    const nextState = cloneState(state);
+    const accountIndex = nextState.accounts.findIndex((candidate) => candidate.accountId === accountId);
+    nextState.accounts[accountIndex] = {
+      ...nextState.accounts[accountIndex],
+      accountName,
+      isActive: input.isActive === undefined ? account.isActive : Boolean(input.isActive),
+      updatedAt: occurredAt
+    };
+    appendAudit(nextState, "ACCOUNT_UPDATED", "ACCOUNT", accountId, {
+      accountName,
+      isActive: nextState.accounts[accountIndex].isActive
+    }, occurredAt);
+    return nextState;
+  }
+
+
+  function normalizeJournalInput(state, input, journalId) {
+    const businessDate = assertBusinessDate(input.businessDate);
+    const description = normalizeText(input.description);
+    const sourceReference = normalizeText(input.sourceReference);
+    if (!description) fail("JOURNAL_DESCRIPTION_REQUIRED", "Journal description is required.");
+    if (!Array.isArray(input.lines) || input.lines.length < 2) {
+      fail("JOURNAL_LINES_MINIMUM", "A journal requires at least two lines.");
+    }
+
+
+    const accountMap = new Map(state.accounts.map((account) => [account.accountId, account]));
+    const lines = input.lines.map((inputLine, index) => {
+      const account = accountMap.get(inputLine.accountId);
+      if (!account) fail("ACCOUNT_NOT_FOUND", `Line ${index + 1} references an unknown account.`);
+      const debitAmountMinor = assertIntegerAmount(inputLine.debitAmountMinor ?? 0, "debitAmountMinor");
+      const creditAmountMinor = assertIntegerAmount(inputLine.creditAmountMinor ?? 0, "creditAmountMinor");
+      const hasDebit = debitAmountMinor > 0;
+      const hasCredit = creditAmountMinor > 0;
+      if (hasDebit === hasCredit) {
+        fail("JOURNAL_LINE_INVALID", `Line ${index + 1} must contain debit or credit, exclusively.`);
+      }
+      return {
+        journalLineId: `${journalId}-L${String(index + 1).padStart(3, "0")}`,
+        accountId: account.accountId,
+        debitAmountMinor,
+        creditAmountMinor
+      };
+    });
+    return { businessDate, description, sourceReference, lines };
+  }
+
+
+  function calculateJournalBalance(journal) {
+    let totalDebitAmountMinor = 0;
+    let totalCreditAmountMinor = 0;
+    for (const line of journal.lines) {
+      totalDebitAmountMinor += line.debitAmountMinor;
+      totalCreditAmountMinor += line.creditAmountMinor;
+      if (!Number.isSafeInteger(totalDebitAmountMinor) || !Number.isSafeInteger(totalCreditAmountMinor)) {
+        fail("AMOUNT_TOTAL_OVERFLOW", "Journal total exceeds the safe integer range.");
+      }
+    }
+    return {
+      totalDebitAmountMinor,
+      totalCreditAmountMinor,
+      isBalanced: totalDebitAmountMinor > 0 && totalDebitAmountMinor === totalCreditAmountMinor
+    };
+  }
+
+
+  function saveJournalDraft(state, input, occurredAt) {
+    assertState(state);
+    const nextState = cloneState(state);
+    const journalId = formatSequence("JRN", nextState.nextJournalNumber);
+    const normalized = normalizeJournalInput(nextState, input, journalId);
+    nextState.nextJournalNumber += 1;
+    nextState.journals.push({
+      journalId,
+      journalStatus: "DRAFT",
+      ...normalized,
+      reversalOfJournalId: null,
+      createdAt: occurredAt,
+      updatedAt: occurredAt,
+      postedAt: null
+    });
+    appendAudit(nextState, "JOURNAL_DRAFT_CREATED", "JOURNAL", journalId, {
+      businessDate: normalized.businessDate
+    }, occurredAt);
+    return { state: nextState, journalId };
+  }
+
+
+  function updateJournalDraft(state, journalId, input, occurredAt) {
+    assertState(state);
+    const journal = state.journals.find((candidate) => candidate.journalId === journalId);
+    if (!journal) fail("JOURNAL_NOT_FOUND", `Journal ${journalId} was not found.`);
+    if (journal.journalStatus !== "DRAFT") {
+      fail("JOURNAL_POSTED_IMMUTABLE", "Posted journals cannot be edited.", { journalId });
+    }
+    const nextState = cloneState(state);
+    const normalized = normalizeJournalInput(nextState, input, journalId);
+    const journalIndex = nextState.journals.findIndex((candidate) => candidate.journalId === journalId);
+    nextState.journals[journalIndex] = {
+      ...nextState.journals[journalIndex],
+      ...normalized,
+      updatedAt: occurredAt
+    };
+    appendAudit(nextState, "JOURNAL_DRAFT_UPDATED", "JOURNAL", journalId, {
+      businessDate: normalized.businessDate
+    }, occurredAt);
+    return nextState;
+  }
+
+
+  function postJournalInternal(state, journalId, occurredAt, allowInactiveAccounts) {
+    assertState(state);
+    const journal = state.journals.find((candidate) => candidate.journalId === journalId);
+    if (!journal) fail("JOURNAL_NOT_FOUND", `Journal ${journalId} was not found.`);
+    if (journal.journalStatus !== "DRAFT") fail("JOURNAL_ALREADY_POSTED", "Journal is already posted.");
+
+
+    const accountMap = new Map(state.accounts.map((account) => [account.accountId, account]));
+    for (const line of journal.lines) {
+      const account = accountMap.get(line.accountId);
+      if (!account?.isActive && !allowInactiveAccounts) {
+        fail("ACCOUNT_INACTIVE", `Account ${line.accountId} is inactive and cannot receive a new posting.`);
+      }
+    }
+    const balance = calculateJournalBalance(journal);
+    if (!balance.isBalanced) {
+      fail("JOURNAL_NOT_BALANCED", "Journal debit and credit totals must be equal and greater than zero.", balance);
+    }
+
+
+    const nextState = cloneState(state);
+    const journalIndex = nextState.journals.findIndex((candidate) => candidate.journalId === journalId);
+    nextState.journals[journalIndex] = {
+      ...nextState.journals[journalIndex],
+      journalStatus: "POSTED",
+      postedAt: occurredAt,
+      updatedAt: occurredAt
+    };
+    appendAudit(nextState, "JOURNAL_POSTED", "JOURNAL", journalId, balance, occurredAt);
+    return nextState;
+  }
+
+
+  function postJournal(state, journalId, occurredAt) {
+    return postJournalInternal(state, journalId, occurredAt, false);
+  }
+
+
+  function reverseJournal(state, journalId, input, occurredAt) {
+    assertState(state);
+    const journal = state.journals.find((candidate) => candidate.journalId === journalId);
+    if (!journal) fail("JOURNAL_NOT_FOUND", `Journal ${journalId} was not found.`);
+    if (journal.journalStatus !== "POSTED") {
+      fail("JOURNAL_REVERSAL_NOT_ALLOWED", "Only posted journals may be reversed.");
+    }
+    if (journal.reversalOfJournalId) {
+      fail("JOURNAL_REVERSAL_NOT_ALLOWED", "A reversal journal cannot be reversed in the foundation version.");
+    }
+    if (state.journals.some((candidate) => candidate.reversalOfJournalId === journalId)) {
+      fail("JOURNAL_ALREADY_REVERSED", "A reversal already exists for this journal.");
+    }
+
+
+    const draftInput = {
+      businessDate: input.businessDate,
+      description: normalizeText(input.description) || `Reversal of ${journalId}`,
+      sourceReference: journal.sourceReference,
+      lines: journal.lines.map((line) => ({
+        accountId: line.accountId,
+        debitAmountMinor: line.creditAmountMinor,
+        creditAmountMinor: line.debitAmountMinor
+      }))
+    };
+    const saved = saveJournalDraft(state, draftInput, occurredAt);
+    const postedState = postJournalInternal(saved.state, saved.journalId, occurredAt, true);
+    const reversalIndex = postedState.journals.findIndex((candidate) => candidate.journalId === saved.journalId);
+    postedState.journals[reversalIndex].reversalOfJournalId = journalId;
+    appendAudit(postedState, "JOURNAL_REVERSAL_CREATED", "JOURNAL", saved.journalId, {
+      reversalOfJournalId: journalId
+    }, occurredAt);
+    assertState(postedState);
+    return { state: postedState, reversalJournalId: saved.journalId };
+  }
+
+
+  function buildAccountingSnapshot(state) {
+    assertState(state);
+    const accountById = new Map();
+    const trialByAccountId = new Map();
+    const ledgerByAccountId = new Map();
+    for (const account of state.accounts) {
+      accountById.set(account.accountId, account);
+      trialByAccountId.set(account.accountId, {
+        accountId: account.accountId,
+        accountCode: account.accountCode,
+        accountName: account.accountName,
+        accountType: account.accountType,
+        totalDebitAmountMinor: 0,
+        totalCreditAmountMinor: 0,
+        netDebitAmountMinor: 0,
+        debitBalanceAmountMinor: 0,
+        creditBalanceAmountMinor: 0
+      });
+      ledgerByAccountId.set(account.accountId, []);
+    }
+
+
+    let draftJournalCount = 0;
+    let postedJournalCount = 0;
+    let postedDebitAmountMinor = 0;
+    let postedCreditAmountMinor = 0;
+    const orderedJournals = [...state.journals].sort((left, right) =>
+      left.businessDate.localeCompare(right.businessDate) || left.journalId.localeCompare(right.journalId)
+    );
+
+
+    for (const journal of orderedJournals) {
+      if (journal.journalStatus === "DRAFT") {
+        draftJournalCount += 1;
+        continue;
+      }
+      postedJournalCount += 1;
+      for (const line of journal.lines) {
+        postedDebitAmountMinor += line.debitAmountMinor;
+        postedCreditAmountMinor += line.creditAmountMinor;
+        const trial = trialByAccountId.get(line.accountId);
+        trial.totalDebitAmountMinor += line.debitAmountMinor;
+        trial.totalCreditAmountMinor += line.creditAmountMinor;
+        ledgerByAccountId.get(line.accountId).push({
+          businessDate: journal.businessDate,
+          journalId: journal.journalId,
+          description: journal.description,
+          debitAmountMinor: line.debitAmountMinor,
+          creditAmountMinor: line.creditAmountMinor,
+          reversalOfJournalId: journal.reversalOfJournalId
+        });
+      }
+    }
+
+
+    const trialBalance = [...trialByAccountId.values()]
+      .map((row) => {
+        const netDebitAmountMinor = row.totalDebitAmountMinor - row.totalCreditAmountMinor;
+        return {
+          ...row,
+          netDebitAmountMinor,
+          debitBalanceAmountMinor: Math.max(netDebitAmountMinor, 0),
+          creditBalanceAmountMinor: Math.max(-netDebitAmountMinor, 0)
+        };
+      })
+      .sort((left, right) => left.accountCode.localeCompare(right.accountCode));
+
+
+    let trialDebitBalanceAmountMinor = 0;
+    let trialCreditBalanceAmountMinor = 0;
+    for (const row of trialBalance) {
+      trialDebitBalanceAmountMinor += row.debitBalanceAmountMinor;
+      trialCreditBalanceAmountMinor += row.creditBalanceAmountMinor;
+    }
+
+
+    return {
+      accountById,
+      ledgerByAccountId,
+      trialBalance,
+      activeAccountCount: state.accounts.filter((account) => account.isActive).length,
+      draftJournalCount,
+      postedJournalCount,
+      postedDebitAmountMinor,
+      postedCreditAmountMinor,
+      trialDebitBalanceAmountMinor,
+      trialCreditBalanceAmountMinor,
+      isPostedLedgerBalanced: postedDebitAmountMinor === postedCreditAmountMinor,
+      isTrialBalanceBalanced: trialDebitBalanceAmountMinor === trialCreditBalanceAmountMinor
+    };
+  }
+
+
+  function serializeState(state) {
+    assertState(state);
+    return JSON.stringify(state, null, 2);
+  }
+
+
+  function parseState(serializedState) {
+    let parsed;
+    try {
+      parsed = JSON.parse(serializedState);
+    } catch (error) {
+      fail("STATE_INVALID", "Imported state is not valid JSON.", { cause: error.message });
+    }
+    assertState(parsed);
+    return cloneState(parsed);
+  }
+
+
+  return Object.freeze({
+    SCHEMA_VERSION,
+    MODULE_VERSION,
+    ACCOUNT_TYPES,
+    JOURNAL_STATUSES,
+    AccountingError,
+    createInitialState,
+    assertState,
+    addAccount,
+    updateAccount,
+    saveJournalDraft,
+    updateJournalDraft,
+    postJournal,
+    reverseJournal,
+    calculateJournalBalance,
+    buildAccountingSnapshot,
+    serializeState,
+    parseState
+  });
+});
+
+
+FILE — src/app.js
+(function startMaxiAccountingApp() {
+  "use strict";
+
+
+  const core = globalThis.MaxiAccountingCore;
+  if (!core) throw new Error("MaxiAccountingCore failed to load.");
+
+
+  const STORAGE_KEY = "maxi.accounting.foundation.state.v1";
+  const BACKUP_KEY = "maxi.accounting.foundation.backup.v1";
+  const rupiah = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  });
+
+
+  let state;
+  let activeView = "dashboard";
+  let editingJournalId = null;
+  let journalEditorLines = [createEditorLine(), createEditorLine()];
+  let selectedLedgerAccountId = "";
+
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+
+  function createEditorLine() {
+    return {
+      editorLineId: `EDITOR-${globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)}`,
+      accountId: "",
+      debitAmountMinor: "",
+      creditAmountMinor: ""
+    };
+  }
+
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+
+  function nowUtc() {
+    return new Date().toISOString();
+  }
+
+
+  function loadState() {
+    const serializedState = localStorage.getItem(STORAGE_KEY);
+    return serializedState ? core.parseState(serializedState) : core.createInitialState();
+  }
+
+
+  function persistState(nextState) {
+    core.assertState(nextState);
+    localStorage.setItem(STORAGE_KEY, core.serializeState(nextState));
+    state = nextState;
+  }
+
+
+  function showNotice(message, tone = "success") {
+    const notice = $("notice");
+    notice.textContent = message;
+    notice.dataset.tone = tone;
+    notice.classList.add("show");
+    window.clearTimeout(showNotice.timeoutId);
+    showNotice.timeoutId = window.setTimeout(() => notice.classList.remove("show"), 3500);
+  }
+
+
+  function handleError(error) {
+    const message = error?.code ? `${error.code}: ${error.message}` : error?.message || "Unexpected error.";
+    console.error(error);
+    showNotice(message, "error");
+  }
+
+
+  function accountOptions(selectedAccountId = "") {
+    return [
+      '<option value="">Pilih akun</option>',
+      ...state.accounts
+        .filter((account) => account.isActive || account.accountId === selectedAccountId)
+        .sort((left, right) => left.accountCode.localeCompare(right.accountCode))
+        .map((account) => `<option value="${escapeHtml(account.accountId)}" ${account.accountId === selectedAccountId ? "selected" : ""}>${escapeHtml(account.accountCode)} · ${escapeHtml(account.accountName)}${account.isActive ? "" : " (inactive)"}</option>`)
+    ].join("");
+  }
+
+
+  function renderNavigation() {
+    document.querySelectorAll("[data-view]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.view === activeView);
+    });
+  }
+
+
+  function renderDashboard(snapshot) {
+    const trialRows = snapshot.trialBalance.filter((row) => row.totalDebitAmountMinor || row.totalCreditAmountMinor);
+    return `
+      <section class="page-heading">
+        <div><span class="eyebrow">Foundation snapshot</span><h2>Dashboard</h2></div>
+        <span class="status-pill ${snapshot.isPostedLedgerBalanced ? "ok" : "danger"}">${snapshot.isPostedLedgerBalanced ? "Ledger balanced" : "Ledger mismatch"}</span>
+      </section>
+      <div class="metric-grid">
+        <article class="metric"><span>Active accounts</span><strong>${snapshot.activeAccountCount}</strong><small>Chart is user-defined</small></article>
+        <article class="metric"><span>Draft journals</span><strong>${snapshot.draftJournalCount}</strong><small>Excluded from ledger</small></article>
+        <article class="metric"><span>Posted journals</span><strong>${snapshot.postedJournalCount}</strong><small>Immutable records</small></article>
+        <article class="metric"><span>Posted debit</span><strong>${rupiah.format(snapshot.postedDebitAmountMinor)}</strong><small>Credit ${rupiah.format(snapshot.postedCreditAmountMinor)}</small></article>
+      </div>
+      <article class="panel">
+        <div class="panel-title"><div><span class="eyebrow">Posted only</span><h3>Trial-balance pulse</h3></div><button class="ghost-button" data-go-view="trial">Open trial balance</button></div>
+        ${trialRows.length ? `
+          <div class="table-wrap"><table><thead><tr><th>Account</th><th>Debit balance</th><th>Credit balance</th><th>Net D−C</th></tr></thead><tbody>
+          ${trialRows.slice(0, 8).map((row) => `<tr><td><b>${escapeHtml(row.accountCode)}</b><br><small>${escapeHtml(row.accountName)}</small></td><td>${rupiah.format(row.debitBalanceAmountMinor)}</td><td>${rupiah.format(row.creditBalanceAmountMinor)}</td><td>${rupiah.format(row.netDebitAmountMinor)}</td></tr>`).join("")}
+          </tbody></table></div>` : '<div class="empty-state">Belum ada posted journal. Dashboard masih zen banget, bos.</div>'}
+      </article>`;
+  }
+
+
+  function renderAccounts() {
+    const accounts = [...state.accounts].sort((left, right) => left.accountCode.localeCompare(right.accountCode));
+    return `
+      <section class="page-heading"><div><span class="eyebrow">Owned master data</span><h2>Chart of Accounts</h2></div><span class="status-pill">${accounts.length} accounts</span></section>
+      <div class="two-column">
+        <form class="panel form-stack" id="accountForm">
+          <div class="panel-title"><div><span class="eyebrow">No seeded mapping</span><h3>Add account</h3></div></div>
+          <label>Account code<input id="accountCode" autocomplete="off" placeholder="Example: 1001" required></label>
+          <label>Account name<input id="accountName" autocomplete="off" placeholder="Name decided by owner" required></label>
+          <label>Account type<select id="accountType">${core.ACCOUNT_TYPES.map((type) => `<option value="${type}">${type}</option>`).join("")}</select></label>
+          <button class="primary-button" type="submit">Create account</button>
+          <p class="helper">The app never auto-assigns account mappings. This avoids a confident-looking financial fanfiction.</p>
+        </form>
+        <article class="panel">
+          <div class="panel-title"><div><span class="eyebrow">Explicit master</span><h3>Accounts</h3></div></div>
+          ${accounts.length ? `<div class="account-list">${accounts.map((account) => `
+            <div class="account-row">
+              <div><b>${escapeHtml(account.accountCode)} · ${escapeHtml(account.accountName)}</b><small>${account.accountType} · ${account.accountId}</small></div>
+              <button class="${account.isActive ? "ghost-button" : "muted-button"}" data-toggle-account="${account.accountId}">${account.isActive ? "Deactivate" : "Activate"}</button>
+            </div>`).join("")}</div>` : '<div class="empty-state">Create the first account to unlock journal entry.</div>'}
+        </article>
+      </div>`;
+  }
+
+
+  function renderEditorLines() {
+    return journalEditorLines.map((line, index) => `
+      <tr data-editor-line="${line.editorLineId}">
+        <td><select data-line-field="accountId">${accountOptions(line.accountId)}</select></td>
+        <td><input inputmode="numeric" data-line-field="debitAmountMinor" value="${escapeHtml(line.debitAmountMinor)}" placeholder="0"></td>
+        <td><input inputmode="numeric" data-line-field="creditAmountMinor" value="${escapeHtml(line.creditAmountMinor)}" placeholder="0"></td>
+        <td><button type="button" class="icon-button" data-remove-line="${line.editorLineId}" aria-label="Remove line">×</button></td>
+      </tr>`).join("");
+  }
+
+
+  function renderJournals() {
+    const journals = [...state.journals].sort((left, right) => right.businessDate.localeCompare(left.businessDate) || right.journalId.localeCompare(left.journalId));
+    return `
+      <section class="page-heading"><div><span class="eyebrow">Double-entry core</span><h2>Journal</h2></div><span class="status-pill">Draft → Post → Reverse</span></section>
+      <article class="panel journal-editor">
+        <div class="panel-title"><div><span class="eyebrow">${editingJournalId ? `Editing ${escapeHtml(editingJournalId)}` : "New journal"}</span><h3>${editingJournalId ? "Update draft" : "Create draft"}</h3></div>${editingJournalId ? '<button class="ghost-button" type="button" id="cancelEditJournal">Cancel edit</button>' : ""}</div>
+        <form id="journalForm" class="form-stack">
+          <div class="form-grid"><label>Business date<input id="businessDate" type="date" required></label><label>Source reference<input id="sourceReference" autocomplete="off" placeholder="Optional manual reference"></label></div>
+          <label>Description<input id="journalDescription" autocomplete="off" placeholder="Explain the business fact" required></label>
+          <div class="table-wrap"><table class="journal-lines"><thead><tr><th>Account</th><th>Debit (rupiah)</th><th>Credit (rupiah)</th><th></th></tr></thead><tbody id="journalLineBody">${renderEditorLines()}</tbody></table></div>
+          <div class="editor-actions"><button class="ghost-button" type="button" id="addJournalLine">+ Add line</button><button class="primary-button" type="submit">${editingJournalId ? "Update draft" : "Save draft"}</button></div>
+        </form>
+      </article>
+      <article class="panel">
+        <div class="panel-title"><div><span class="eyebrow">Audit-safe lifecycle</span><h3>Journal register</h3></div></div>
+        ${journals.length ? `<div class="journal-list">${journals.map((journal) => {
+          const balance = core.calculateJournalBalance(journal);
+          return `<div class="journal-card">
+            <div class="journal-card-main"><span class="status-pill ${journal.journalStatus === "POSTED" ? "ok" : ""}">${journal.journalStatus}</span><div><b>${journal.journalId} · ${escapeHtml(journal.description)}</b><small>${journal.businessDate} · Debit ${rupiah.format(balance.totalDebitAmountMinor)} · Credit ${rupiah.format(balance.totalCreditAmountMinor)}${journal.reversalOfJournalId ? ` · Reversal of ${journal.reversalOfJournalId}` : ""}</small></div></div>
+            <div class="journal-actions">
+              ${journal.journalStatus === "DRAFT" ? `<button class="ghost-button" data-edit-journal="${journal.journalId}">Edit</button><button class="primary-button" data-post-journal="${journal.journalId}">Post</button>` : ""}
+              ${journal.journalStatus === "POSTED" && !journal.reversalOfJournalId ? `<button class="danger-button" data-reverse-journal="${journal.journalId}">Reverse</button>` : ""}
+            </div>
+          </div>`;
+        }).join("")}</div>` : '<div class="empty-state">No journal yet. Drafts can be unbalanced; posting cannot.</div>'}
+      </article>`;
+  }
+
+
+  function renderLedger(snapshot) {
+    if (!state.accounts.some((account) => account.accountId === selectedLedgerAccountId) && state.accounts.length) {
+      selectedLedgerAccountId = state.accounts[0].accountId;
+    }
+    const account = snapshot.accountById.get(selectedLedgerAccountId);
+    const entries = snapshot.ledgerByAccountId.get(selectedLedgerAccountId) || [];
+    let runningNetDebitAmountMinor = 0;
+    return `
+      <section class="page-heading"><div><span class="eyebrow">Posted journal projection</span><h2>General Ledger</h2></div></section>
+      <article class="panel">
+        <label class="ledger-selector">Account<select id="ledgerAccountSelect">${[...state.accounts].sort((a, b) => a.accountCode.localeCompare(b.accountCode)).map((candidate) => `<option value="${candidate.accountId}" ${candidate.accountId === selectedLedgerAccountId ? "selected" : ""}>${escapeHtml(candidate.accountCode)} · ${escapeHtml(candidate.accountName)}</option>`).join("")}</select></label>
+        ${account ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Journal</th><th>Description</th><th>Debit</th><th>Credit</th><th>Running D−C</th></tr></thead><tbody>
+          ${entries.map((entry) => {
+            runningNetDebitAmountMinor += entry.debitAmountMinor - entry.creditAmountMinor;
+            return `<tr><td>${entry.businessDate}</td><td>${entry.journalId}</td><td>${escapeHtml(entry.description)}</td><td>${rupiah.format(entry.debitAmountMinor)}</td><td>${rupiah.format(entry.creditAmountMinor)}</td><td>${rupiah.format(runningNetDebitAmountMinor)}</td></tr>`;
+          }).join("") || '<tr><td colspan="6">No posted activity for this account.</td></tr>'}
+        </tbody></table></div>` : '<div class="empty-state">Create an account first.</div>'}
+      </article>`;
+  }
+
+
+  function renderTrialBalance(snapshot) {
+    const totalDebitAmountMinor = snapshot.trialDebitBalanceAmountMinor;
+    const totalCreditAmountMinor = snapshot.trialCreditBalanceAmountMinor;
+    return `
+      <section class="page-heading"><div><span class="eyebrow">Posted journals only</span><h2>Trial Balance</h2></div><span class="status-pill ${totalDebitAmountMinor === totalCreditAmountMinor ? "ok" : "danger"}">${totalDebitAmountMinor === totalCreditAmountMinor ? "Balanced" : "Mismatch"}</span></section>
+      <article class="panel"><div class="table-wrap"><table><thead><tr><th>Code</th><th>Account</th><th>Type</th><th>Debit</th><th>Credit</th><th>Net D−C</th></tr></thead><tbody>
+        ${snapshot.trialBalance.map((row) => `<tr><td><b>${escapeHtml(row.accountCode)}</b></td><td>${escapeHtml(row.accountName)}</td><td>${row.accountType}</td><td>${rupiah.format(row.debitBalanceAmountMinor)}</td><td>${rupiah.format(row.creditBalanceAmountMinor)}</td><td>${rupiah.format(row.netDebitAmountMinor)}</td></tr>`).join("") || '<tr><td colspan="6">No accounts yet.</td></tr>'}
+        <tr class="total-row"><td colspan="3">TOTAL</td><td>${rupiah.format(totalDebitAmountMinor)}</td><td>${rupiah.format(totalCreditAmountMinor)}</td><td>${rupiah.format(totalDebitAmountMinor - totalCreditAmountMinor)}</td></tr>
+      </tbody></table></div></article>`;
+  }
+
+
+  function renderAudit() {
+    const entries = [...state.auditEntries].reverse();
+    return `
+      <section class="page-heading"><div><span class="eyebrow">Local audit trail</span><h2>Audit & Data</h2></div><span class="status-pill">Not tamper-evident</span></section>
+      <div class="two-column">
+        <article class="panel form-stack"><div class="panel-title"><div><span class="eyebrow">Portable state</span><h3>Export / Import</h3></div></div><button class="primary-button" id="exportState">Export JSON</button><label class="file-button">Import JSON<input type="file" id="importState" accept="application/json"></label><p class="helper">Import replaces the active browser state after confirmation. A local backup is stored before replacement.</p></article>
+        <article class="panel"><div class="panel-title"><div><span class="eyebrow">Append-only by app flow</span><h3>Audit entries</h3></div></div>${entries.length ? `<div class="audit-list">${entries.map((entry) => `<div class="audit-row"><b>${entry.action}</b><span>${entry.entityType} · ${entry.entityId}</span><small>${escapeHtml(entry.occurredAt)} · ${entry.auditEntryId}</small></div>`).join("")}</div>` : '<div class="empty-state">No audit activity yet.</div>'}</article>
+      </div>`;
+  }
+
+
+  function render() {
+    const snapshot = core.buildAccountingSnapshot(state);
+    renderNavigation();
+    const views = {
+      dashboard: () => renderDashboard(snapshot),
+      accounts: renderAccounts,
+      journals: renderJournals,
+      ledger: () => renderLedger(snapshot),
+      trial: () => renderTrialBalance(snapshot),
+      audit: renderAudit
+    };
+    $("appView").innerHTML = (views[activeView] || views.dashboard)();
+    bindViewEvents();
+    if (activeView === "journals") hydrateJournalForm();
+  }
+
+
+  function readEditorLinesFromDom() {
+    journalEditorLines = [...document.querySelectorAll("[data-editor-line]")].map((row) => ({
+      editorLineId: row.dataset.editorLine,
+      accountId: row.querySelector('[data-line-field="accountId"]').value,
+      debitAmountMinor: row.querySelector('[data-line-field="debitAmountMinor"]').value,
+      creditAmountMinor: row.querySelector('[data-line-field="creditAmountMinor"]').value
+    }));
+  }
+
+
+  function hydrateJournalForm() {
+    const journal = editingJournalId ? state.journals.find((candidate) => candidate.journalId === editingJournalId) : null;
+    if (!journal) return;
+    $("businessDate").value = journal.businessDate;
+    $("journalDescription").value = journal.description;
+    $("sourceReference").value = journal.sourceReference;
+  }
+
+
+  function journalInputFromDom() {
+    readEditorLinesFromDom();
+    return {
+      businessDate: $("businessDate").value,
+      description: $("journalDescription").value,
+      sourceReference: $("sourceReference").value,
+      lines: journalEditorLines.map((line) => ({
+        accountId: line.accountId,
+        debitAmountMinor: line.debitAmountMinor || 0,
+        creditAmountMinor: line.creditAmountMinor || 0
+      }))
+    };
+  }
+
+
+  function resetJournalEditor() {
+    editingJournalId = null;
+    journalEditorLines = [createEditorLine(), createEditorLine()];
+  }
+
+
+  function bindJournalLineEvents() {
+    document.querySelectorAll("[data-remove-line]").forEach((button) => button.addEventListener("click", () => {
+      readEditorLinesFromDom();
+      if (journalEditorLines.length <= 2) return handleError(new Error("A journal requires at least two lines."));
+      journalEditorLines = journalEditorLines.filter((line) => line.editorLineId !== button.dataset.removeLine);
+      $("journalLineBody").innerHTML = renderEditorLines();
+      bindJournalLineEvents();
+    }));
+  }
+
+
+  function bindViewEvents() {
+    document.querySelectorAll("[data-go-view]").forEach((button) => button.addEventListener("click", () => {
+      activeView = button.dataset.goView;
+      render();
+    }));
+
+
+    $("accountForm")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      try {
+        const result = core.addAccount(state, {
+          accountCode: $("accountCode").value,
+          accountName: $("accountName").value,
+          accountType: $("accountType").value
+        }, nowUtc());
+        persistState(result.state);
+        showNotice(`Account ${result.accountId} created.`);
+        render();
+      } catch (error) { handleError(error); }
+    });
+
+
+    document.querySelectorAll("[data-toggle-account]").forEach((button) => button.addEventListener("click", () => {
+      try {
+        const account = state.accounts.find((candidate) => candidate.accountId === button.dataset.toggleAccount);
+        persistState(core.updateAccount(state, account.accountId, { isActive: !account.isActive }, nowUtc()));
+        showNotice(`${account.accountCode} is now ${account.isActive ? "inactive" : "active"}.`);
+        render();
+      } catch (error) { handleError(error); }
+    }));
+
+
+    $("addJournalLine")?.addEventListener("click", () => {
+      readEditorLinesFromDom();
+      journalEditorLines.push(createEditorLine());
+      $("journalLineBody").innerHTML = renderEditorLines();
+      bindJournalLineEvents();
+    });
+
+
+    bindJournalLineEvents();
+
+
+    $("journalForm")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      try {
+        const input = journalInputFromDom();
+        if (editingJournalId) {
+          persistState(core.updateJournalDraft(state, editingJournalId, input, nowUtc()));
+          showNotice(`${editingJournalId} updated.`);
+        } else {
+          const result = core.saveJournalDraft(state, input, nowUtc());
+          persistState(result.state);
+          showNotice(`${result.journalId} saved as draft.`);
+        }
+        resetJournalEditor();
+        render();
+      } catch (error) { handleError(error); }
+    });
+
+
+    $("cancelEditJournal")?.addEventListener("click", () => { resetJournalEditor(); render(); });
+
+
+    document.querySelectorAll("[data-edit-journal]").forEach((button) => button.addEventListener("click", () => {
+      const journal = state.journals.find((candidate) => candidate.journalId === button.dataset.editJournal);
+      editingJournalId = journal.journalId;
+      journalEditorLines = journal.lines.map((line) => ({ editorLineId: createEditorLine().editorLineId, ...line }));
+      render();
+    }));
+
+
+    document.querySelectorAll("[data-post-journal]").forEach((button) => button.addEventListener("click", () => {
+      if (!window.confirm(`Post ${button.dataset.postJournal}? Posted journals are immutable.`)) return;
+      try {
+        persistState(core.postJournal(state, button.dataset.postJournal, nowUtc()));
+        showNotice(`${button.dataset.postJournal} posted.`);
+        render();
+      } catch (error) { handleError(error); }
+    }));
+
+
+    document.querySelectorAll("[data-reverse-journal]").forEach((button) => button.addEventListener("click", () => {
+      const businessDate = window.prompt("Business date for reversal (YYYY-MM-DD):", "");
+      if (!businessDate) return;
+      const description = window.prompt("Reversal description:", `Reversal of ${button.dataset.reverseJournal}`) || "";
+      try {
+        const result = core.reverseJournal(state, button.dataset.reverseJournal, { businessDate, description }, nowUtc());
+        persistState(result.state);
+        showNotice(`${result.reversalJournalId} posted as reversal.`);
+        render();
+      } catch (error) { handleError(error); }
+    }));
+
+
+    $("ledgerAccountSelect")?.addEventListener("change", (event) => {
+      selectedLedgerAccountId = event.target.value;
+      render();
+    });
+
+
+    $("exportState")?.addEventListener("click", () => {
+      const blob = new Blob([core.serializeState(state)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `maxi-accounting-backup-${new Date().toISOString().replaceAll(":", "-")}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    });
+
+
+    $("importState")?.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file || !window.confirm("Import will replace the active browser state. Continue?")) return;
+      try {
+        const importedState = core.parseState(await file.text());
+        localStorage.setItem(BACKUP_KEY, core.serializeState(state));
+        persistState(importedState);
+        resetJournalEditor();
+        showNotice("State imported. Previous state saved to the local backup key.");
+        render();
+      } catch (error) { handleError(error); }
+    });
+  }
+
+
+  function bindShellEvents() {
+    document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
+      activeView = button.dataset.view;
+      render();
+    }));
+  }
+
+
+  try {
+    state = loadState();
+    bindShellEvents();
+    render();
+  } catch (error) {
+    console.error(error);
+    $("appView").innerHTML = `<article class="fatal panel"><span class="eyebrow">State blocked</span><h2>Local accounting state cannot be loaded</h2><p>${escapeHtml(error.code || "ERROR")}: ${escapeHtml(error.message)}</p><p>Export the raw localStorage value manually before clearing anything. The app will not silently reset financial data.</p></article>`;
+  }
+})();
+
+
+FILE — tests/accounting-core.test.js
+"use strict";
+
+
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const core = require("../src/accounting-core.js");
+
+
+const occurredAt = "2026-07-31T10:00:00.000Z";
+
+
+function addTestAccount(state, accountCode, accountName, accountType) {
+  return core.addAccount(state, { accountCode, accountName, accountType }, occurredAt).state;
+}
+
+
+function createStateWithAccounts() {
+  let state = core.createInitialState();
+  state = addTestAccount(state, "1001", "Test Cash", "ASSET");
+  state = addTestAccount(state, "3001", "Test Equity", "EQUITY");
+  return state;
+}
+
+
+function validJournalInput(state, amountMinor = 125000) {
+  return {
+    businessDate: "2026-07-31",
+    description: "Owner capital test fact",
+    sourceReference: "TEST-001",
+    lines: [
+      { accountId: state.accounts[0].accountId, debitAmountMinor: amountMinor, creditAmountMinor: 0 },
+      { accountId: state.accounts[1].accountId, debitAmountMinor: 0, creditAmountMinor: amountMinor }
+    ]
+  };
+}
+
+
+test("initial state uses active schema and contains no invented accounts", () => {
+  const state = core.createInitialState();
+  assert.equal(state.schemaVersion, "1.0.0");
+  assert.equal(state.moduleVersion, "0.1.0");
+  assert.deepEqual(state.accounts, []);
+  assert.deepEqual(state.journals, []);
+});
+
+
+test("account codes are normalized and unique", () => {
+  let state = core.createInitialState();
+  state = addTestAccount(state, " cash-01 ", "Test Cash", "asset");
+  assert.equal(state.accounts[0].accountCode, "CASH-01");
+  assert.equal(state.accounts[0].accountType, "ASSET");
+  assert.throws(
+    () => core.addAccount(state, { accountCode: "cash-01", accountName: "Duplicate", accountType: "ASSET" }, occurredAt),
+    (error) => error.code === "ACCOUNT_CODE_DUPLICATE"
+  );
+});
+
+
+test("draft may be unbalanced but posting rejects it", () => {
+  const state = createStateWithAccounts();
+  const input = validJournalInput(state);
+  input.lines[1].creditAmountMinor = 120000;
+  const saved = core.saveJournalDraft(state, input, occurredAt);
+  assert.equal(saved.state.journals[0].journalStatus, "DRAFT");
+  assert.throws(
+    () => core.postJournal(saved.state, saved.journalId, occurredAt),
+    (error) => error.code === "JOURNAL_NOT_BALANCED"
+  );
+});
+
+
+test("posting a balanced journal is immutable and included in snapshot", () => {
+  const state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state), occurredAt);
+  const posted = core.postJournal(saved.state, saved.journalId, "2026-07-31T10:05:00.000Z");
+  assert.equal(posted.journals[0].journalStatus, "POSTED");
+  assert.equal(core.buildAccountingSnapshot(posted).postedDebitAmountMinor, 125000);
+  assert.throws(
+    () => core.updateJournalDraft(posted, saved.journalId, validJournalInput(posted), occurredAt),
+    (error) => error.code === "JOURNAL_POSTED_IMMUTABLE"
+  );
+});
+
+
+test("reversal swaps debit and credit without mutating original", () => {
+  const state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state, 50000), occurredAt);
+  const posted = core.postJournal(saved.state, saved.journalId, occurredAt);
+  const originalBefore = JSON.stringify(posted.journals[0]);
+  const reversed = core.reverseJournal(posted, saved.journalId, {
+    businessDate: "2026-08-01",
+    description: "Correction test"
+  }, "2026-08-01T08:00:00.000Z");
+  const reversal = reversed.state.journals.find((journal) => journal.journalId === reversed.reversalJournalId);
+  assert.equal(JSON.stringify(reversed.state.journals[0]), originalBefore);
+  assert.equal(reversal.reversalOfJournalId, saved.journalId);
+  assert.equal(reversal.lines[0].creditAmountMinor, 50000);
+  assert.equal(reversal.lines[1].debitAmountMinor, 50000);
+  assert.equal(core.buildAccountingSnapshot(reversed.state).trialBalance[0].netDebitAmountMinor, 0);
+});
+
+
+test("reversal remains possible after an original account is deactivated", () => {
+  let state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state), occurredAt);
+  state = core.postJournal(saved.state, saved.journalId, occurredAt);
+  state = core.updateAccount(state, state.accounts[0].accountId, { isActive: false }, occurredAt);
+  const reversed = core.reverseJournal(state, saved.journalId, { businessDate: "2026-08-02" }, occurredAt);
+  assert.equal(reversed.state.journals[1].journalStatus, "POSTED");
+});
+
+
+test("a journal can only be reversed once", () => {
+  const state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state), occurredAt);
+  const posted = core.postJournal(saved.state, saved.journalId, occurredAt);
+  const reversed = core.reverseJournal(posted, saved.journalId, { businessDate: "2026-08-01" }, occurredAt);
+  assert.throws(
+    () => core.reverseJournal(reversed.state, saved.journalId, { businessDate: "2026-08-02" }, occurredAt),
+    (error) => error.code === "JOURNAL_ALREADY_REVERSED"
+  );
+});
+
+
+test("inactive account rejects an ordinary new posting", () => {
+  let state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state), occurredAt);
+  state = core.updateAccount(saved.state, state.accounts[0].accountId, { isActive: false }, occurredAt);
+  assert.throws(
+    () => core.postJournal(state, saved.journalId, occurredAt),
+    (error) => error.code === "ACCOUNT_INACTIVE"
+  );
+});
+
+
+test("snapshot excludes draft journals from ledger totals", () => {
+  const state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state), occurredAt);
+  const snapshot = core.buildAccountingSnapshot(saved.state);
+  assert.equal(snapshot.draftJournalCount, 1);
+  assert.equal(snapshot.postedJournalCount, 0);
+  assert.equal(snapshot.postedDebitAmountMinor, 0);
+});
+
+
+test("trial balance reports closing debit and credit balances that reconcile", () => {
+  const state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state, 87500), occurredAt);
+  const posted = core.postJournal(saved.state, saved.journalId, occurredAt);
+  const snapshot = core.buildAccountingSnapshot(posted);
+  assert.equal(snapshot.trialDebitBalanceAmountMinor, 87500);
+  assert.equal(snapshot.trialCreditBalanceAmountMinor, 87500);
+  assert.equal(snapshot.trialBalance[0].debitBalanceAmountMinor, 87500);
+  assert.equal(snapshot.trialBalance[1].creditBalanceAmountMinor, 87500);
+  assert.equal(snapshot.isTrialBalanceBalanced, true);
+});
+
+
+test("invalid calendar date and dual-sided line are rejected", () => {
+  const state = createStateWithAccounts();
+  const invalidDate = validJournalInput(state);
+  invalidDate.businessDate = "2026-02-30";
+  assert.throws(() => core.saveJournalDraft(state, invalidDate, occurredAt), (error) => error.code === "JOURNAL_DATE_INVALID");
+  const invalidLine = validJournalInput(state);
+  invalidLine.lines[0].creditAmountMinor = 1;
+  assert.throws(() => core.saveJournalDraft(state, invalidLine, occurredAt), (error) => error.code === "JOURNAL_LINE_INVALID");
+});
+
+
+test("serialized state round-trips and unsupported schemas are blocked", () => {
+  const state = createStateWithAccounts();
+  assert.deepEqual(core.parseState(core.serializeState(state)), state);
+  const incompatibleState = { ...state, schemaVersion: "2.0.0" };
+  assert.throws(
+    () => core.parseState(JSON.stringify(incompatibleState)),
+    (error) => error.code === "STATE_SCHEMA_UNSUPPORTED"
+  );
+});
+
+
+test("assertState blocks corrupted posted financial data", () => {
+  const state = createStateWithAccounts();
+  const saved = core.saveJournalDraft(state, validJournalInput(state), occurredAt);
+  const posted = core.postJournal(saved.state, saved.journalId, occurredAt);
+  posted.journals[0].lines[1].creditAmountMinor = 1;
+  assert.throws(() => core.assertState(posted), (error) => error.code === "STATE_INVALID");
+});
+
+
+FILE — package.json
+{
+  "name": "maxi-accounting-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dependency-free MAXI Accounting foundation prototype.",
+  "scripts": {
+    "check": "node --check src/accounting-core.js && node --check src/app.js",
+    "test": "node --test tests/accounting-core.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
