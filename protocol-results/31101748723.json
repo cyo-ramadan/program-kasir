@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "stage": "complete",
+  "validation": "PASS",
+  "requestFile": "protocol-requests/maxi-protocol-20260806-051000.json",
+  "repositoryName": "maxi-protocol",
+  "validationOutput": "\n> maxi-protocol@0.1.0 test\n> npm run check\n\n\n> maxi-protocol@0.1.0 check\n> node scripts/validate-protocol.js\n\nMAXI protocol validation PASS\n",
+  "commitSha": "44c7b48b5de95e205833c4ee6be96657f19da6c2",
+  "fileCount": 15,
+  "repositoryUrl": "https://github.com/cyo-ramadan/maxi-protocol"
+}
