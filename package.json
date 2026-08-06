@@ -1,0 +1,10 @@
+{
+  "name": "maxi-program-kasir",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check src/pos-core.js && node --check src/app.js"
+  }
+}

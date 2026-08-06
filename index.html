@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>MAXI Program Kasir</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <main class="device" aria-label="MAXI Program Kasir">
+    <div class="screen">
+      <header class="topbar">
+        <div class="header-row">
+          <div><span class="eyebrow">MAXI POS</span><h1>Program Kasir</h1></div>
+          <button id="registerButton" class="register-pill" type="button">Shift Aktif</button>
+        </div>
+        <nav class="tabs" aria-label="Navigasi utama">
+          <button class="tab active" data-page="cashier">Kasir</button>
+          <button class="tab" data-page="history">Riwayat</button>
+          <button class="tab" data-page="products">Barang</button>
+          <button class="tab" data-page="dashboard">Dashboard</button>
+        </nav>
+      </header>
+
+
+      <div class="content">
+        <section id="cashierPage" class="page active">
+          <div class="scanner-card">
+            <div class="scanner-icon" aria-hidden="true">▥</div>
+            <div class="scanner-copy"><strong>Barcode Ready Space</strong><span>Hardware module menyusul · input manual aktif</span></div>
+            <span class="status-dot">SIM</span>
+          </div>
+          <form id="barcodeForm" class="search-row">
+            <input id="barcodeInput" autocomplete="off" placeholder="Scan / ketik barcode lalu Enter" aria-label="Barcode">
+            <button class="icon-button" type="submit" aria-label="Cari barcode">↵</button>
+          </form>
+          <div class="search-row">
+            <input id="productSearch" autocomplete="off" placeholder="Cari nama barang..." aria-label="Cari barang">
+          </div>
+          <div id="categoryFilters" class="chip-row"></div>
+          <div id="productGrid" class="product-grid"></div>
+        </section>
+
+
+        <section id="historyPage" class="page">
+          <div class="section-heading"><div><span class="eyebrow dark">TRANSAKSI</span><h2>Riwayat Penjualan</h2></div><span id="historyCount" class="count-badge">0</span></div>
+          <input id="historySearch" class="full-input" placeholder="Cari nomor transaksi atau barang">
+          <div id="historyList" class="stack"></div>
+        </section>
+
+
+        <section id="productsPage" class="page">
+          <div class="section-heading"><div><span class="eyebrow dark">MASTER</span><h2>Barang Kasir</h2></div><button id="addProductButton" class="btn" type="button">+ Barang</button></div>
+          <p class="muted">Barcode field sudah tersedia untuk mapping scanner module nanti.</p>
+          <div id="masterProductList" class="stack"></div>
+        </section>
+
+
+        <section id="dashboardPage" class="page">
+          <div class="section-heading"><div><span class="eyebrow dark">TODAY</span><h2>Dashboard Kasir</h2></div></div>
+          <div class="metric-grid">
+            <article class="metric hero"><span>Omzet Lokal</span><strong id="dashboardRevenue">Rp0</strong></article>
+            <article class="metric"><span>Transaksi</span><strong id="dashboardSales">0</strong></article>
+            <article class="metric"><span>Item Terjual</span><strong id="dashboardItems">0</strong></article>
+          </div>
+          <article class="card integration-card">
+            <div class="integration-head"><span class="integration-icon">A</span><div><strong>Accounting Connection Space</strong><p>Port tersedia, adapter & contract belum dikonfigurasi.</p></div></div>
+            <span class="integration-status">NOT CONFIGURED</span>
+          </article>
+          <article class="card">
+            <strong>Quick Control</strong>
+            <p class="muted">Reset hanya menghapus snapshot lokal Program Kasir.</p>
+            <button id="resetDataButton" class="btn danger" type="button">Reset Demo Data</button>
+          </article>
+        </section>
+      </div>
+
+
+      <button id="cartBar" class="cart-bar" type="button">
+        <span class="cart-count" id="cartCount">0</span>
+        <span><small>Keranjang</small><strong id="cartTotal">Rp0</strong></span>
+        <span class="cart-action">Lihat →</span>
+      </button>
+    </div>
+  </main>
+
+
+  <div id="sheetBackdrop" class="backdrop" hidden></div>
+  <section id="cartSheet" class="sheet" aria-modal="true" role="dialog" aria-labelledby="cartTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><span class="eyebrow dark">CHECKOUT</span><h2 id="cartTitle">Keranjang Kasir</h2></div><button class="close-button" data-close-sheet>×</button></div>
+    <div id="cartLines" class="cart-lines"></div>
+    <div class="discount-row"><label for="discountInput">Diskon transaksi</label><input id="discountInput" inputmode="numeric" type="number" min="0" value="0"></div>
+    <div id="cartSummary" class="summary-box"></div>
+    <button id="paymentButton" class="btn primary wide" type="button">Lanjut Pembayaran</button>
+  </section>
+
+
+  <section id="paymentSheet" class="sheet" aria-modal="true" role="dialog" aria-labelledby="paymentTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><span class="eyebrow dark">PAYMENT</span><h2 id="paymentTitle">Pembayaran</h2></div><button class="close-button" data-close-sheet>×</button></div>
+    <div id="paymentTotal" class="payment-total">Rp0</div>
+    <div class="method-grid">
+      <button class="method active" data-method="cash">Cash</button>
+      <button class="method" data-method="non-cash">Non-Cash</button>
+    </div>
+    <label class="field-label" for="paymentAmount">Nominal diterima</label>
+    <input id="paymentAmount" class="full-input big-input" type="number" min="0" inputmode="numeric">
+    <div id="changePreview" class="change-preview">Kembalian: Rp0</div>
+    <button id="completeSaleButton" class="btn primary wide" type="button">Selesaikan Transaksi</button>
+  </section>
+
+
+  <section id="productSheet" class="sheet" aria-modal="true" role="dialog" aria-labelledby="productTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><h2 id="productTitle">Tambah Barang</h2><button class="close-button" data-close-sheet>×</button></div>
+    <form id="productForm">
+      <input id="editingProductId" type="hidden">
+      <label class="field-label" for="productNameInput">Nama barang</label><input id="productNameInput" class="full-input" required>
+      <label class="field-label" for="productCategoryInput">Kategori</label><input id="productCategoryInput" class="full-input" required>
+      <label class="field-label" for="productBarcodeInput">Barcode</label><input id="productBarcodeInput" class="full-input">
+      <label class="field-label" for="productPriceInput">Harga jual</label><input id="productPriceInput" class="full-input" type="number" min="0" required>
+      <button class="btn primary wide" type="submit">Simpan Barang</button>
+    </form>
+  </section>
+
+
+  <section id="receiptSheet" class="sheet" aria-modal="true" role="dialog" aria-labelledby="receiptTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><h2 id="receiptTitle">Nota Penjualan</h2><button class="close-button" data-close-sheet>×</button></div>
+    <div id="receiptContent"></div>
+    <button class="btn wide" type="button" onclick="window.print()">Print Nota</button>
+  </section>
+
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
