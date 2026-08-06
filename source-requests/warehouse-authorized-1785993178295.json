@@ -1,0 +1,6 @@
+{
+  "repositoryName": "warehouse",
+  "payloadPath": "source-payloads/warehouse.zip.b64",
+  "payloadType": "zip-base64",
+  "commitMessage": "chore: import Program Pergudangan MAXI source"
+}
