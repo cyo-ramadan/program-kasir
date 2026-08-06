@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "stage": "git_push",
+  "requestFile": "wiki-requests/maxi-protocol-diagnostic-1786018835437.json",
+  "repositoryName": "maxi-protocol",
+  "error": "Command '['git', 'push', '--force', '-u', 'origin', 'master']' returned non-zero exit status 128.",
+  "detail": "remote: Repository not found.\nfatal: repository 'https://github.com/cyo-ramadan/maxi-protocol.wiki.git/' not found\n"
+}
