@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Check out request
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Create repository
         env:
