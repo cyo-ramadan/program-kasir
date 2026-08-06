@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "stage": "complete",
+  "requestFile": "source-requests/accounting-sync-1785993290205.json",
+  "repositoryName": "accounting",
+  "payloadType": "maxi-source-document",
+  "repositoryUrl": "https://github.com/cyo-ramadan/accounting",
+  "fileCount": 41
+}
