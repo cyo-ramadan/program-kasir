@@ -1,0 +1,7 @@
+{
+  "repositoryName": "ikan-galeh",
+  "payloadPath": "source-payloads/ikan-galeh-index.html",
+  "payloadType": "single-file",
+  "outputPath": "index.html",
+  "commitMessage": "chore: import latest aplikasi ikan Karen Elle source"
+}
