@@ -1,0 +1,961 @@
+FILE — README.md
+# MAXI Protocol
+
+Canonical engineering protocol for the MAXI software ecosystem.
+
+## Authority
+
+This repository is the canonical source of truth. Google Drive remains the human-readable operational mirror. If content differs, this repository governs until synchronization is completed.
+
+## Reading order
+
+1. [Engineering Constitution](constitution/MAXI_ENGINEERING_CONSTITUTION.md)
+2. [AI Quick Gate](quick-gate/MAXI_AI_QUICK_GATE.md)
+3. [AI Personalization Bootstrap](bootstrap/MAXI_AI_PERSONALIZATION_BOOTSTRAP.md)
+4. [AI Onboarding Manual](manuals/MAXI_AI_ONBOARDING.md)
+5. [Documentation System](standards/DOCUMENTATION_SYSTEM.md)
+6. [Integration Contract](standards/INTEGRATION_CONTRACT.md)
+7. [Module Manual Template](templates/MODULE_MANUAL_TEMPLATE.md)
+8. [Coding and Naming Standard](standards/CODING_AND_NAMING.md)
+
+## Mandatory synchronization
+
+Every protocol change must update:
+
+- canonical Markdown in this repository;
+- the corresponding Google Drive document;
+- `CHANGELOG.md`;
+- version metadata when applicable.
+
+A change is incomplete while GitHub and Google Drive differ.
+
+FILE — SYNC_POLICY.md
+# GitHub–Google Drive Synchronization Policy
+
+## Canonical direction
+
+GitHub is written first and is authoritative. Google Drive is updated immediately afterward as the human-readable mirror.
+
+## Required workflow
+
+1. Update the canonical Markdown.
+2. Record the change in `CHANGELOG.md`.
+3. Run protocol validation.
+4. Commit the GitHub change.
+5. Apply the same semantic change to the linked Google Drive document.
+6. Verify version, headings, normative force, and content parity.
+7. Record PASS, FAIL, or BLOCKED.
+
+Emergency Drive-first edits are provisional. They become official only after synchronization to GitHub and verification.
+
+## Source map
+
+- `constitution/MAXI_ENGINEERING_CONSTITUTION.md` ↔ https://docs.google.com/document/d/1135M9w0vaxnfOx6-AgTPyGM4q0nCYO65RezGjywpDYs/edit
+- `quick-gate/MAXI_AI_QUICK_GATE.md` ↔ https://docs.google.com/document/d/1y6ykPW9O-kjvw_Y5OJFySnQLY2GI3eTE6odE680iZZw/edit
+- `bootstrap/MAXI_AI_PERSONALIZATION_BOOTSTRAP.md` ↔ https://docs.google.com/document/d/1xzKqQgyhaYzhaLB3CgOiw2N-DH0x3nCGUJ7IbWx6JXs/edit
+- `manuals/MAXI_AI_ONBOARDING.md` ↔ https://docs.google.com/document/d/1gbHqaSUa5wL8XXZSyihntneIYtTWL341uBFA6pECu04/edit
+- `standards/DOCUMENTATION_SYSTEM.md` ↔ https://docs.google.com/document/d/10AAa616Cnb1HZCsdQdtHpV182SDB0hn_vXYLR9hkwV8/edit
+- `standards/INTEGRATION_CONTRACT.md` ↔ https://docs.google.com/document/d/1LQGFa6htgMeT73C5JptarfgTJLn4FHlCzUW0riyBovQ/edit
+- `templates/MODULE_MANUAL_TEMPLATE.md` ↔ https://docs.google.com/document/d/1tpVBs83xnUdwflMLzG_QZ3eqf_Luu19zxy_qGd2l4MY/edit
+- `standards/CODING_AND_NAMING.md` ↔ https://docs.google.com/document/d/1ngVGP9BeDIgGHSDfbPLjVhG81xbdtgcoQpYP3pJ4Ap0/edit
+
+FILE — CHANGELOG.md
+# Changelog
+
+All material MAXI protocol changes are recorded here.
+
+## 2026-08-06
+
+- Established `maxi-protocol` as the canonical protocol repository.
+- Retained Google Drive as the human-readable mirror.
+- Added mandatory GitHub–Drive synchronization policy.
+- Added SaaS multi-tenant architecture, tenant isolation, tenant naming, integration, and module-readiness rules.
+
+FILE — constitution/MAXI_ENGINEERING_CONSTITUTION.md
+MAXI AI Engineering Constitution
+Version 0.2 — ACTIVE
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Authority: Bos Cyo
+Applies to every AI, developer, program, service, database, SDK, and integration in the MAXI ecosystem.
+
+
+1. Purpose
+This constitution preserves project continuity when an AI, model version, developer, framework, or system owner changes. Model knowledge is never treated as project memory. Project memory lives in versioned documentation, contracts, decisions, source code, and tests.
+
+
+2. Normative Language
+WAJIB means mandatory. DILARANG means prohibited. SEBAIKNYA means a deviation requires written reasoning. BOLEH means optional.
+
+
+3. Non-Negotiable Rules
+R1 — Every AI must read the required protocol and module context before changing code.
+R2 — An AI must stop and ask when business meaning, ownership, contract, security, accounting, inventory, or migration behavior is ambiguous.
+R3 — Programs communicate through approved APIs, events, and SDKs.
+R4 — A program may not write directly to another program’s database.
+R5 — Business applications report business facts. Accounting owns journal interpretation. Inventory owns stock and valuation interpretation.
+R6 — Shared contracts are versioned and backward-compatible by default.
+R7 — Posted journals and official stock movements are immutable. Corrections use reversal or adjustment with an audit trail.
+R8 — Financial and inventory integrity decisions must be deterministic.
+R9 — Every material change includes relevant documentation and tests in the same changeset.
+R10 — Work is not complete without evidence, compatibility assessment, and handover.
+
+
+4. Source of Truth
+Business terminology belongs to the System Glossary.
+Business invariants belong to Domain Rules.
+API and event formats belong to OpenAPI, AsyncAPI, and JSON Schema.
+Architecture rationale belongs to Architecture Decision Records.
+Active module capability and limitation belong to Current State.
+Implementation belongs to source code.
+Compatibility evidence belongs to automated tests.
+When two sources conflict, the AI must stop, identify the conflict, and request an owner decision. Silent alignment is prohibited.
+
+
+5. Ownership and Approval — REVIEW/APPROVAL BUREAUCRACY INACTIVE
+Every system and shared interface must have an owner.
+Internal implementation changes may proceed under the active task instruction. Separate module-owner approval is INACTIVE.
+Review from affected owners is ADVISORY and NON-BLOCKING. Shared contract, vocabulary, ownership, accounting, inventory, security, and breaking changes still require explicit impact, compatibility, test, and migration evidence.
+Bos Cyo is the final decision maker when owners disagree.
+
+
+6. Prohibited AI Behavior
+An AI may not claim to have read inaccessible material.
+An AI may not invent events, fields, statuses, account mappings, item mappings, tax behavior, timezone, or unit conversion.
+An AI may not redesign unrelated code while completing a focused task.
+An AI may not hide failures through silent fallback or fabricated defaults.
+An AI may not declare completion while required tests fail or documentation is stale.
+An AI may mark a shared rule active only when the active task contains direct authority from Bos Cyo; separate reviewer approval is INACTIVE.
+
+
+7. Change Governance
+Every change begins with an impact assessment.
+Shared or breaking changes require an RFC, migration plan, compatibility plan, and test plan. Required reviewer/owner approval is INACTIVE.
+Architecture decisions are recorded as new ADRs. Old ADRs remain visible and may be marked Superseded.
+Protocol changes use semantic versioning.
+
+
+8. Compliance Declaration
+Before coding, the AI records the protocol version, project, contract versions, relevant interfaces, baseline test status, documentation impact, and ambiguities.
+After coding, the AI records files changed, contracts changed, migrations, tests and results, backward compatibility, documentation updates, deployment notes, recovery plan, known issues, and open risks.
+PASS means all mandatory gates are satisfied. FAIL or BLOCKED may not be reported as complete.
+
+
+9. Ratification
+Status: ACTIVE.
+Approved by Bos Cyo. This document is ACTIVE and governs the MAXI ecosystem.
+10. SaaS Multi-Tenant Product Direction
+S1 — MAXI commercial programs are designed as multi-tenant SaaS products by default unless Bos Cyo explicitly approves another deployment model.
+S2 — One deployed codebase may serve multiple customer companies, but every customer company is a separate tenant with strictly isolated identity, authorization, operational data, financial data, inventory data, configuration, subscription, and audit history.
+S3 — Tenant context must be enforced server-side on every read, write, event, job, cache key, file, export, import, log, reconciliation, backup, and recovery path. Client-supplied tenant identity is untrusted until authorized.
+S4 — Accounting, Inventory, Integration Bridge, and other shared services may serve many tenants from canonical domain services. They may not merge, expose, or process one tenant's business data as another tenant's data.
+S5 — Cross-tenant access is prohibited except for an explicitly authorized platform operation with a documented purpose, least-privilege scope, immutable audit trail, and tests.
+S6 — Architecture, database schemas, public contracts, naming, migrations, observability, testing, and recovery must be SaaS-ready before a program is declared production-ready.
+S7 — Subscription plans and module entitlements control product access. Cancellation, suspension, retention, export, deletion, and reactivation behavior require explicit documented policies and tests; no AI may invent them.
+
+FILE — quick-gate/MAXI_AI_QUICK_GATE.md
+MAXI AI Quick Gate
+Version 0.1 — Foundation Draft
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+This document is mandatory context for every coding task.
+
+
+1. Before Editing
+Read the active Constitution version.
+Read the module manifest, Current State, relevant contract, applicable ADR, Known Issues, Known Pitfalls, and affected tests.
+Run baseline tests.
+Record scope, owners, contract impact, documentation impact, compatibility, migration, tests, and ambiguities.
+If a required source is inaccessible or materially ambiguous, stop and ask.
+
+
+2. Hard Boundaries
+Use approved APIs, events, and SDKs.
+Do not write directly to another program’s database.
+Do not invent events, fields, statuses, mappings, accounts, taxes, timezone, units, or business rules.
+Business applications report facts. Accounting owns journal interpretation. Inventory owns stock and valuation.
+Shared contracts are versioned and backward-compatible by default.
+Posted financial and official stock records are corrected through reversal or adjustment.
+Financial integrity, inventory integrity, idempotency, and deduplication must be deterministic.
+
+
+3. Change Discipline
+Make the smallest focused change that satisfies the request.
+Preserve unrelated user and AI changes.
+Follow the existing architecture, formatter, linter, test framework, naming, and dependency policy.
+A shared or breaking change requires an RFC, migration plan, compatibility plan, and test plan. Affected-owner approval is INACTIVE and advisory.
+A shared rule may become active only through explicit Bos Cyo task authority; separate reviewer approval is INACTIVE.
+
+
+4. Documentation Gate
+Every change declares DOC-IMPACT: REQUIRED or NOT_REQUIRED with reason.
+Update documentation, contract, migration, and tests in the same changeset as material behavior.
+Search for an existing canonical entry before adding one.
+Route active facts to Current State, unresolved bugs to Known Issues, repeatable lessons to Known Pitfalls, recovery to Runbook, public errors to Error Catalog, history to Changelog, and architecture rationale to ADR.
+Do not duplicate rules or turn the Constitution into a feature diary.
+
+
+5. Completion Gate
+Required tests must pass.
+Contract and code must agree.
+Compatibility must be assessed.
+Migration must have execution and recovery plans.
+Documentation impact must be resolved.
+Required reviewer approval: INACTIVE. Review feedback is advisory and non-blocking.
+Handover must include files, contracts, migrations, tests and results, compatibility, documentation, deployment, recovery, known issues, and open risks.
+FAIL or BLOCKED may not be reported as complete.
+
+
+6. Escalation
+When documentation, code, tests, or contracts conflict, do not choose silently.
+Show the conflict, affected systems, evidence, and decision needed.
+Bos Cyo is the final decision maker for unresolved cross-owner or cross-domain conflicts.
+
+
+Compliance Record
+Protocol version:
+Project and module:
+Contract version:
+Baseline test status:
+DOC-IMPACT:
+Ambiguities:
+Final status: PASS | FAIL | BLOCKED
+
+FILE — bootstrap/MAXI_AI_PERSONALIZATION_BOOTSTRAP.md
+MAXI AI Personalization Bootstrap Prompt
+Version 0.2 — Foundation Draft
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Purpose: provide a copy-ready personalization instruction for any AI that will work on MAXI software.
+Copy only the text between START OF PERSONALIZATION and END OF PERSONALIZATION into the AI’s personalization or persistent project instruction.
+
+
+1. Context About MAXI
+MAXI is a company and business ecosystem owned and led by Bos Cyo. MAXI develops and operates businesses while building an internal software ecosystem to support them.
+The planned ecosystem includes Accounting, Inventory/Warehouse, Integration Bridge, and business applications such as Pentol, Leker, POS/Cashier, Online Store, and future applications.
+Each program has a clear domain, owner, source code, database ownership, documentation, and integration contract. Business applications communicate with core systems through approved APIs, events, and SDKs.
+Bos Cyo is the final decision maker for unresolved business, ownership, architecture, and cross-domain conflicts.
+An AI’s identity, model version, default coding style, and general training knowledge never override MAXI’s active protocol and project documentation.
+
+
+2. Copy-Ready Personalization Prompt
+START OF PERSONALIZATION
+
+
+You may be assigned work within MAXI.
+
+
+MAXI is a company and business ecosystem owned and led by Bos Cyo. MAXI develops and operates businesses and builds an integrated internal software ecosystem. The ecosystem may include Accounting, Inventory/Warehouse, Integration Bridge, Pentol, Leker, POS/Cashier, Online Store, and other future programs.
+
+
+Bos Cyo is the final decision maker for unresolved business, ownership, architecture, and cross-domain decisions. Module ownership must be read from active Ownership or Module Manifest documentation. Reviewer authority is ADVISORY and NON-BLOCKING.
+
+
+The canonical MAXI Manual Hub is located at:
+https://drive.google.com/drive/folders/1pnzrpDftF_5cvAC-ePn8y9K7HJD8SZzd
+
+
+Before working on MAXI software, open this folder and read the required manuals according to the MAXI AI Onboarding & Context Loading Manual.
+
+
+If Google Drive is unavailable, use the protocol and documentation versions pinned inside the project repository. If neither source is accessible, stop and request access. Do not continue from memory or assumption.
+
+
+For every MAXI programming task, follow this mandatory workflow:
+
+
+1. Identify the repository, program, module, requested behavior, and affected systems.
+2. Before modifying code, read the active AI_GATE, Module Manifest, Current State, relevant contract, applicable ADR, Known Issues, Known Pitfalls, and affected tests.
+3. For a new AI, new model version, new session, context reset or compaction, protocol change, unfamiliar repository, or cross-system work, perform the full onboarding defined by the MAXI AI Onboarding Manual.
+4. Treat versioned MAXI documentation, contracts, source code, and tests as project knowledge. Do not use general model knowledge to invent missing project facts.
+5. If a required document is inaccessible, outdated, contradictory, or materially ambiguous, stop the affected work, show the conflict, and request a decision.
+6. Produce a preflight impact assessment before coding. Include affected modules, APIs, events, database objects, owners, contract impact, documentation impact, security, migration, backward compatibility, tests, and open questions.
+7. Use canonical MAXI vocabulary and naming rules. Technical identifiers use clear English domain terms. Use descriptive names such as saleId, saleLines, totalAmountMinor, saleStatus, and calculateSaleTotal. Avoid vague names such as data, data1, abc, tmp, hasil, finalData, processData, or locally invented synonyms.
+8. Follow the repository’s formatter, linter, architecture, naming convention, dependency policy, and test framework. Make the smallest focused change and preserve unrelated work.
+9. Programs communicate only through approved APIs, events, and SDKs. Do not write directly to another program’s database.
+10. Business applications report business facts. Accounting owns journal interpretation. Inventory owns stock, costing, and valuation. Integration Bridge validates, deduplicates, maps, routes, retries, and records processing status.
+11. Do not invent events, fields, statuses, account mappings, item mappings, tax behavior, timezone, units, business rules, or fallback values.
+12. Shared contracts are versioned and backward-compatible by default. Shared or breaking changes require an RFC, migration plan, compatibility plan, and tests. Affected-owner approval is INACTIVE and advisory.
+13. Every change must declare DOC-IMPACT: REQUIRED or DOC-IMPACT: NOT_REQUIRED with an objective reason.
+14. When documentation is required, update code, contract, migration, tests, and documentation in the same changeset. Search for the canonical entry before creating a new entry.
+15. Route active facts to Current State, unresolved bugs to Known Issues, repeatable lessons to Known Pitfalls, operational recovery to Runbook, public errors to Error Catalog, version history to Changelog, and architecture rationale to a new ADR.
+16. Do not turn the Constitution into a feature diary, duplicate shared rules, rewrite old ADR history, or describe proposed behavior as already deployed.
+17. Run baseline tests before editing and all required unit, contract, integration, failure, regression, and reconciliation tests after editing.
+18. Do not report completion while a required test fails, compatibility is unknown, documentation is stale, migration lacks recovery, or material ambiguity remains. Required reviewer approval is INACTIVE.
+19. Finish with an evidence-based handover containing files changed, contracts changed, migrations, tests and results, backward compatibility, documentation updates, deployment notes, rollback or recovery, known issues, open risks, and optional advisory reviews.
+20. Report final compliance as PASS, FAIL, or BLOCKED. FAIL and BLOCKED must never be presented as complete.
+
+
+This personalization is a bootstrap instruction. The active protocol version and repository documentation remain authoritative.
+
+
+END OF PERSONALIZATION
+
+
+3. Installation and Use
+Install the personalization once for every AI that will work on MAXI.
+Also place a short project instruction file in every repository that directs the AI to the local AI_GATE and Module Manifest.
+Pin the active protocol and contract versions in the Module Manifest.
+When a model is upgraded, begins a new session, or loses context, repeat full onboarding.
+The personalization may remind an AI where to look. It may not replace repository documentation, machine-readable contracts, or automated tests.
+
+
+4. Change Control
+Changes to the copy-ready prompt may be applied directly under explicit Bos Cyo task authority. Separate reviewer approval is INACTIVE.
+A proposed update must state the reason, affected workflow, backward compatibility, and protocol version.
+The active prompt version must match the version referenced by active project manifests.
+
+FILE — manuals/MAXI_AI_ONBOARDING.md
+MAXI AI Onboarding & Context Loading Manual
+Version 0.1 — Foundation Draft
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Purpose: give every new or upgraded AI enough verified project context before it changes code.
+
+
+1. When Full Onboarding Is Mandatory
+Full onboarding is required for a new AI, new model version, new session, context reset or compaction, protocol version change, unfamiliar repository, shared contract change, and work involving architecture, security, accounting, inventory valuation, data ownership, or cross-system migration.
+
+
+2. Mandatory Read Order
+Step 1 — Read AI_GATE for non-negotiable rules.
+Step 2 — Read the active Engineering Constitution version.
+Step 3 — Read the module manifest and Current State.
+Step 4 — Read relevant Glossary and Domain Rules entries.
+Step 5 — Read relevant API, event, and schema contracts.
+Step 6 — Read applicable ADRs, Known Issues, Known Pitfalls, and Runbook sections.
+Step 7 — Inspect affected source code, tests, migrations, and uncommitted work.
+Step 8 — Run baseline tests before editing.
+
+
+3. Context Loading Levels
+Level A — Quick Gate. Load for every coding task. Target 800–1,500 tokens. It contains protocol ID, version, hard rules, source-of-truth routing, prohibited behavior, and completion gate.
+Level B — Task Context. Load only the module state, vocabulary, domain rules, contracts, ADRs, issues, code, and tests relevant to the requested change.
+Level C — Full Governance Context. Load the complete protocol and relevant cross-domain documents for onboarding, contract work, architecture, security, accounting, valuation, ownership, migration, or documentation conflicts.
+A tool call within the same verified session does not require re-reading the entire manual.
+
+
+4. Context Budget
+Reserve enough context for Quick Gate, task-specific documentation, relevant code and tests, tool output, reasoning, and final evidence.
+Maintain at least 30 percent headroom for reasoning and response.
+Do not fill the context window with unrelated documentation.
+If important code or test evidence would be truncated, narrow the documentation retrieval before continuing.
+
+
+5. Preflight Record
+Before coding, record:
+Change ID.
+Project and module.
+Requested change.
+Protocol and contract versions.
+Affected modules, APIs, events, database objects, and owners.
+Contract impact: none, additive, or breaking.
+Documentation impact: required or not required.
+Security and migration impact.
+Backward compatibility.
+Required tests.
+Open questions.
+Ambiguity affecting behavior, data, security, accounting, inventory, or contracts blocks implementation until an owner decides.
+
+
+6. Execution Rules
+Use the existing architecture, SDK, naming, formatter, linter, and test framework.
+Keep changes minimal and focused.
+Preserve unrelated user or AI changes.
+Do not invent missing facts.
+Do not change shared contracts to simplify one local implementation.
+Re-read live code and indexes after material or concurrent changes.
+
+
+7. Completion Gate
+A task is complete when required tests pass, documentation impact is resolved, compatibility is assessed, and migrations have an execution and recovery plan. Required reviewer approval is INACTIVE and advisory.
+Required evidence includes files changed, contracts changed, migrations, tests and results, compatibility, documentation updates, deployment notes, recovery, known issues, and open risks.
+FAIL or BLOCKED may not be labeled complete.
+
+
+8. Session Continuity
+If the AI model changes, the session is lost, or context compaction removes proof of onboarding, treat the next task as a new session.
+AI identity and model version belong in the handover metadata. They never replace protocol or project state.
+
+FILE — standards/DOCUMENTATION_SYSTEM.md
+MAXI Documentation System & Module Memory Standard
+Version 0.1 — Foundation Draft
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Purpose: preserve durable knowledge without turning the central manual into a daily activity log.
+
+
+1. Documentation Architecture
+Shared documentation contains rules that apply across programs: Constitution, Quick Gate, System Glossary, Domain Rules, Ownership, Compatibility, and shared contracts.
+Module documentation lives beside the source code of each program and is versioned in the same repository and changeset.
+A central documentation hub may index module documents, but the module repository remains the canonical home for module-specific knowledge.
+
+
+2. Required Module Documents
+MODULE_MANIFEST records module ID, version, owner, protocol version, contracts, dependencies, events, and document paths.
+MODULE_CONTEXT explains purpose, architecture, boundaries, workflow, and data ownership.
+CURRENT_STATE contains active capabilities, limitations, pending migrations, supported versions, and current operational facts.
+KNOWN_ISSUES contains unresolved defects.
+KNOWN_PITFALLS contains repeatable traps and behavior that future maintainers must not accidentally reintroduce.
+ERROR_CATALOG contains stable error codes, meaning, cause, retryability, and handling.
+RUNBOOK contains operational diagnosis, recovery, reconciliation, and emergency actions.
+CHANGELOG contains concise version history.
+ADR records why a material architecture or domain decision was made.
+
+
+3. Documentation Impact Gate
+Every change must declare DOC-IMPACT: REQUIRED or DOC-IMPACT: NOT_REQUIRED with an objective reason.
+Documentation is required when a change affects an API, event, schema, enum, error code, business meaning, domain invariant, ownership, database schema, lifecycle, accounting, inventory, security, retry, idempotency, configuration, dependency, recovery, shared SDK, compatibility, architecture, limitation, or reusable behavior.
+Formatting, private variable rename, and behavior-preserving local refactor may be Not Required.
+
+
+4. Documentation Entry Control
+Before writing, the AI must search for an existing canonical entry, classify the information, identify the document owner, and update the existing entry when the topic is the same.
+Create a new entry only when no canonical home exists.
+The Constitution may not become a feature diary.
+Changelog may not define business rules.
+Current State contains current facts, not historical narratives.
+Examples may not override schemas.
+The same rule may not be copied across multiple documents; use references.
+Proposed, Accepted, Implemented, Deployed, Deprecated, Superseded, Rejected, and Unverified are distinct statuses.
+An AI may mark a shared edit Active only under explicit Bos Cyo task authority. Separate owner/reviewer approval is INACTIVE.
+
+
+5. Bug and Error Routing
+An unresolved bug belongs in Known Issues.
+A fixed trivial bug belongs in tests and Changelog.
+A fixed bug with a repeatable lesson belongs in Known Pitfalls.
+An operational failure with recovery steps belongs in Runbook.
+A public or cross-program error belongs in the relevant Error Catalog or contract.
+A bug exposing an architecture decision belongs in a new ADR.
+Do not copy raw logs or large stack traces into durable manuals. Store stable symptoms, root cause, affected versions, resolution, regression test, evidence reference, and prohibited regression behavior.
+
+
+6. Required Entry Metadata
+Every material entry records:
+Entry ID.
+Status.
+Owner.
+Change ID.
+Affected systems and versions.
+Reason.
+Source or evidence.
+Contract impact.
+Backward compatibility.
+Migration or recovery when relevant.
+Advisory reviews (non-blocking).
+
+
+7. Atomic Documentation Rule
+Code, contract, documentation, migration, and tests for one material behavior change belong in the same changeset.
+Do not postpone mandatory documentation to a future task.
+Do not describe a feature as active before it is implemented and deployed.
+A fixed issue must be removed from Current Known Issues and routed to Changelog, Pitfalls, Runbook, or ADR as appropriate.
+
+
+8. Module Documentation Read Order
+A new AI reads AI_GATE, Module Manifest, Module Context, Current State, relevant Issues or Pitfalls, relevant contract, applicable ADR, and affected tests.
+The AI reads only relevant entries unless a full onboarding trigger applies.
+
+
+9. Documentation Quality Gate
+Documentation must be specific enough for an unfamiliar AI to explain the module, identify its boundaries, locate the source of truth, recognize known hazards, and change it without violating contracts.
+A document that only states what changed without why, compatibility, and test evidence fails the gate.
+
+FILE — standards/INTEGRATION_CONTRACT.md
+MAXI Integration Contract Standard
+Version 0.2 — ACTIVE
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical contract gates remain ACTIVE: approved schemas/events, required tests, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Purpose: make every business application connect consistently to Integration Bridge, Accounting, and Inventory.
+
+
+1. Official Architecture
+Business Application sends canonical business facts through the approved Business Core SDK.
+Integration Bridge validates, deduplicates, maps, routes, records processing status, retries failures, and preserves audit references.
+Accounting owns journals, receivables, payables, fiscal periods, closing, reversal, and accounting balances.
+Inventory owns items, warehouses, stock movements, stock balances, BOM, costing, and valuation.
+
+
+2. Application Responsibility
+The application owns its operational transaction and decides when a business fact occurred.
+It emits an approved event and stores a stable transaction ID, event ID, correlation ID, idempotency key, contract version, occurrence time, and business date.
+It uses an outbox when local persistence and event delivery cannot be guaranteed atomically.
+It records sync status and safely retries.
+It does not determine accounts, journal lines, official stock valuation, or canonical warehouse balance.
+
+
+3. Bridge Responsibility
+The Bridge validates authentication, authorization, schema, producer registration, compatibility, mapping, and idempotency.
+It routes one canonical event according to central rules.
+It records Accepted, Processing, Completed, Needs Mapping, Failed Retryable, Failed Permanent, or equivalent approved statuses.
+Missing mappings are surfaced. The Bridge may not guess.
+The Bridge may not change event meaning based on source application.
+
+
+4. Accounting and Inventory Boundary
+A completed cash sale may produce revenue and payment entries in Accounting and stock issue plus valuation in Inventory.
+The source application reports the sale. It never sends debit and credit account numbers.
+Inventory produces the authoritative cost value used for inventory and cost-of-goods accounting.
+Purchase order, goods receipt, supplier invoice, and supplier payment are distinct business events.
+Posted records are corrected through reversal or adjustment.
+
+
+5. Canonical Event Rules
+Event names follow domain.past-tense-fact.vMajor, for example sale.completed.v1.
+Events describe facts that already happened. Commands request actions and use a separate contract.
+Every event defines producer, consumer, trigger condition, required fields, optional fields, semantic meaning, valid examples, invalid examples, retry behavior, idempotency behavior, error behavior, accounting implication, inventory implication, and compatibility policy.
+An application may not introduce a private shared event without registering it centrally.
+
+
+6. Data Standards
+Money does not use binary floating point. IDR uses integer minor units according to contract.
+Fractional quantity uses a decimal string and canonical unit of measure.
+Integration timestamps use ISO 8601 UTC. Business date and branch timezone are explicit.
+Null, empty string, empty array, and zero are different values.
+External ID mapping is explicit and never inferred from similar names.
+IDs from one application are not used as canonical IDs of another application without a registered mapping.
+
+
+7. Reliability Rules
+Duplicate delivery must create one business effect.
+A retry reuses the same idempotency key.
+Timeout does not prove failure.
+The Bridge and every consumer keep an inbox or equivalent deduplication record.
+Failed retryable processing uses controlled retry.
+Permanent failures and exhausted retries enter a visible dead-letter or manual-resolution state.
+Correlation ID links the source transaction, Bridge event, Accounting result, and Inventory result.
+Reconciliation detects partial or missing processing.
+
+
+8. Versioning
+Patch clarifies without behavior change.
+Minor adds backward-compatible capability.
+Major contains breaking changes.
+Removing, renaming, requiring a new field, changing a field meaning, or narrowing an enum is breaking.
+Contracts and SDKs are pinned to explicit versions; latest is prohibited.
+Deprecated versions require replacement, migration guide, support window, and retirement decision.
+
+
+9. Mandatory Contract Tests
+Test valid and invalid events.
+Test duplicate delivery and retry after timeout.
+Test out-of-order and late events.
+Test missing mapping and unauthorized producer.
+Test unsupported contract version.
+Test partial consumer failure and recovery.
+Test refund, reversal, and closed-period behavior when relevant.
+Test offline outbox replay.
+Test backward compatibility.
+Test Accounting and Inventory reconciliation.
+
+
+10. New Application Integration
+Register the application and owner.
+Select approved capabilities and events.
+Map branch, warehouse, product, unit, payment method, tax, customer, supplier, and other required master data.
+Install the approved SDK.
+Implement event emission through the local outbox.
+Run producer, consumer, integration, failure, and reconciliation tests.
+Integration is complete only after every required mapping and test passes.
+11. Coding and I/O Naming
+Public contract field naming and source-code naming follow 05 — MAXI Coding & I/O Naming Standard. This Integration Contract Standard governs integration semantics; the linked standard governs lexical naming and coding discipline.
+12. SaaS Tenant Boundary
+Every producer, Bridge process, and consumer operates within one verified tenant context unless an explicitly approved platform operation states otherwise.
+Canonical contracts use tenantId to identify the subscribing customer company. User identity, business unit, branch, warehouse, and source application remain separate concepts.
+Integration Bridge validates tenant authorization before accepting, mapping, routing, retrying, or reconciling a fact. It may not infer tenant identity from similar names or unverified payload data.
+Event IDs, correlation IDs, idempotency keys, inbox records, outbox records, mappings, retries, dead-letter records, and reconciliation results are tenant-scoped.
+Accounting and Inventory process facts for the verified tenant and preserve tenant isolation in every result. Reports may consolidate units within one tenant when approved; unrelated customer tenants may not be consolidated as one business.
+Cross-tenant routing, mapping, reads, writes, retries, exports, and recovery are prohibited unless an explicitly authorized platform workflow defines scope, audit, compatibility, security, and tests.
+Mandatory integration tests include unauthorized tenant access, forged tenantId, identical source IDs across tenants, cross-tenant duplicate delivery, cache or queue isolation, background-job isolation, and reconciliation per tenant.
+
+FILE — templates/MODULE_MANUAL_TEMPLATE.md
+MAXI Module Manual Template
+Version 0.2 — Foundation Draft
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Instruction: copy this template for every new program or major module. Replace every placeholder before the module is declared ready.
+
+
+1. Module Identity
+Module ID: <MODULE_ID>
+Module name: <MODULE_NAME>
+Purpose: <BUSINESS_PURPOSE>
+Primary owner: <OWNER>
+Current version: <VERSION>
+Repository: <REPOSITORY>
+Protocol version: <PROTOCOL_VERSION>
+Status: PROPOSED | ACTIVE | DEPRECATED | RETIRED
+
+
+2. Scope and Boundary
+Responsibilities owned by this module:
+<RESPONSIBILITIES>
+
+
+Responsibilities explicitly outside this module:
+<OUT_OF_SCOPE>
+
+
+Data owned by this module:
+<OWNED_DATA>
+
+
+Data consumed from other systems:
+<EXTERNAL_DATA>
+
+
+Direct cross-database writes: PROHIBITED.
+
+
+3. Architecture and Main Flow
+Describe entry points, domain services, persistence, background jobs, outbox or inbox, SDKs, external services, and critical state transitions.
+Main flow:
+<MAIN_FLOW>
+
+
+Failure flow:
+<FAILURE_FLOW>
+
+
+Recovery flow:
+<RECOVERY_FLOW>
+
+
+4. Current State
+Active capabilities:
+<ACTIVE_CAPABILITIES>
+
+
+Known limitations:
+<LIMITATIONS>
+
+
+Pending migrations:
+<PENDING_MIGRATIONS>
+
+
+Supported protocol, SDK, database, and runtime versions:
+<SUPPORTED_VERSIONS>
+
+
+The section contains current facts only. Historical changes belong in Changelog or ADR.
+
+
+5. Integration Manifest
+Published events:
+<PUBLISHED_EVENTS>
+
+
+Consumed events:
+<CONSUMED_EVENTS>
+
+
+Called APIs:
+<CALLED_APIS>
+
+
+Provided APIs:
+<PROVIDED_APIS>
+
+
+Required mappings:
+<REQUIRED_MAPPINGS>
+
+
+Authentication and scopes:
+<AUTH_SCOPES>
+
+
+Idempotency strategy:
+<IDEMPOTENCY>
+
+
+Retry and timeout policy:
+<RETRY_POLICY>
+
+
+6. Domain Rules and Invariants
+List the rules that must remain true before and after every change.
+<DOMAIN_INVARIANTS>
+
+
+Identify the canonical Glossary and Domain Rules entries instead of copying shared definitions.
+
+
+7. Database and Migration
+Owned tables or collections:
+<OWNED_DATABASE_OBJECTS>
+
+
+Snapshot or projection tables:
+<SNAPSHOTS>
+
+
+Migration policy:
+<MIGRATION_POLICY>
+
+
+Backup, rollback, or forward-recovery plan:
+<RECOVERY_PLAN>
+
+
+Sensitive data classification:
+<DATA_CLASSIFICATION>
+
+
+8. Known Issues
+For each unresolved issue record ID, status, severity, affected versions, symptoms, conditions, impact, workaround, owner, and evidence.
+<KNOWN_ISSUES>
+
+
+9. Known Pitfalls
+For every repeatable trap record context, root cause, prohibited regression behavior, correct pattern, affected components, and regression test.
+<KNOWN_PITFALLS>
+
+
+10. Error Catalog
+For every stable error record code, meaning, trigger, retryability, user-visible message, internal action, owner, and escalation.
+<ERROR_CATALOG>
+
+
+11. Runbook
+Health checks:
+<HEALTH_CHECKS>
+
+
+Diagnosis:
+<DIAGNOSIS>
+
+
+Recovery:
+<RECOVERY_STEPS>
+
+
+Reconciliation:
+<RECONCILIATION>
+
+
+Emergency stop:
+<EMERGENCY_STOP>
+
+
+12. Testing and Quality Gate
+Required unit tests:
+<UNIT_TESTS>
+
+
+Contract tests:
+<CONTRACT_TESTS>
+
+
+Integration and failure tests:
+<INTEGRATION_TESTS>
+
+
+Regression tests:
+<REGRESSION_TESTS>
+
+
+Completion conditions:
+<COMPLETION_CONDITIONS>
+
+
+13. Decisions
+List applicable ADR IDs and current status.
+<ADR_REFERENCES>
+
+
+Do not rewrite old ADRs. Create a new ADR and mark the previous one Superseded when the decision changes.
+
+
+14. Documentation Entry
+Before adding an entry, search for the canonical existing entry.
+Declare DOC-IMPACT: REQUIRED or NOT_REQUIRED with reason.
+Route current fact to Current State, unresolved bug to Known Issues, repeatable lesson to Known Pitfalls, operational recovery to Runbook, public error to Error Catalog, change history to Changelog, and architecture rationale to ADR.
+Affected-owner review is ADVISORY and NON-BLOCKING. Shared rules still require technical evidence and explicit Bos Cyo task authority.
+
+
+15. Change Handover
+Change ID: <CHANGE_ID>
+AI or developer and model version: <AUTHOR>
+Summary: <SUMMARY>
+Files changed: <FILES>
+Contracts changed: <CONTRACTS>
+Migrations: <MIGRATIONS>
+Documentation impact and updates: <DOC_IMPACT>
+Tests and results: <TEST_RESULTS>
+Backward compatibility: <COMPATIBILITY>
+Deployment notes: <DEPLOYMENT>
+Rollback or recovery: <ROLLBACK>
+Known issues and open risks: <RISKS>
+Approval bureaucracy: INACTIVE
+Advisory reviews (optional): <REVIEWS>
+16. SaaS Multi-Tenant Readiness
+Tenant model and tenant boundary:
+<TENANT_MODEL>
+
+
+Tenant-owned data and tenantId enforcement:
+<TENANT_DATA_SCOPE>
+
+
+Identity, tenant membership, roles, and privileged platform access:
+<TENANT_AUTHORIZATION>
+
+
+Subscription plans and module entitlements:
+<SUBSCRIPTION_AND_ENTITLEMENTS>
+
+
+Cross-tenant isolation controls for database queries, APIs, events, jobs, caches, files, exports, imports, logs, backups, and recovery:
+<TENANT_ISOLATION_CONTROLS>
+
+
+Tenant-aware indexes, uniqueness constraints, idempotency, and deduplication:
+<TENANT_DATABASE_INTEGRITY>
+
+
+Required tenant-isolation, authorization, migration, reconciliation, backup, and recovery tests:
+<TENANT_TESTS>
+
+
+Data retention, export, deletion, cancellation, suspension, and reactivation policy references:
+<TENANT_LIFECYCLE_POLICIES>
+
+
+SaaS readiness status: PROPOSED | PARTIAL | READY | BLOCKED
+<SAAS_READINESS_STATUS>
+
+FILE — standards/CODING_AND_NAMING.md
+MAXI Coding & I/O Naming Standard
+Version 1.1.0 — ACTIVE
+Approval bureaucracy status: INACTIVE by direct instruction of Bos Cyo. Reviewer or affected-owner approval is advisory and may not block starting, completing, merging, deploying, or reporting PASS. Technical gates remain ACTIVE: required tests, documentation, compatibility, security, data integrity, and migration/recovery. Production data mutation still requires explicit task authority from Bos Cyo.
+Authority: Bos Cyo
+Scope: all source code, public contracts, SDKs, events, commands, APIs, adapters, and cross-program integrations in the MAXI ecosystem.
+
+
+1. Purpose
+This standard converts the active MAXI Constitution into concrete coding and lexical naming rules. It governs how code is changed and how public input/output names are formed. Domain meaning remains owned by approved glossaries, domain rules, schemas, contracts, source code, and tests.
+
+
+2. Constitution Rule R2
+The active Constitution R2 is the controlling Ambiguity Gate. This standard operationalizes R2 and does not duplicate, weaken, or replace it.
+Coding must stop before implementation when business meaning, ownership, contract behavior, security, accounting interpretation, inventory interpretation, migration behavior, or compatibility is materially ambiguous.
+
+
+3. Mandatory Coding Rules
+C1 — Context First. Read the active AI_GATE, Module Manifest, Current State, relevant glossary and domain rules, applicable contracts and ADRs, Known Issues, Known Pitfalls, affected source code, migrations, and tests before editing.
+C2 — Preflight First. Record scope, affected systems, owners, interfaces, database objects, contract impact, DOC-IMPACT, security, migration, compatibility, required tests, and unresolved questions before coding.
+C3 — Focused Change. Make the smallest focused change that satisfies the approved request. Preserve unrelated user and AI work and do not redesign unrelated code.
+C4 — Clear Domain Names. Use descriptive English domain identifiers. Vague names such as data, data1, abc, tmp, hasil, finalData, and processData are prohibited.
+C5 — State-Driven Design. Prefer snapshot-driven or state-driven reads and rendering when practical. Derive output from a stable state instead of repeatedly rescanning mutable raw collections.
+C6 — Performance Discipline. Avoid redundant filter, map, or reduce passes over large datasets when one indexed pass, map, cache, or precomputed snapshot can preserve clarity and correctness. Performance changes require tests and must not alter business meaning.
+C7 — Contract Boundary. Programs communicate only through approved APIs, events, SDKs, and Integration Bridge. Direct writes to another program’s database are prohibited.
+C8 — Deterministic Integrity. Financial integrity, inventory integrity, idempotency, deduplication, retries, and reconciliation must be deterministic. Silent fallbacks and fabricated defaults are prohibited.
+C9 — Tests Before and After. Run baseline tests before editing and all required unit, contract, integration, failure, regression, and reconciliation tests after editing.
+C10 — Evidence-Based Completion. Completion requires test evidence, compatibility assessment, resolved documentation impact, deployment and recovery notes, known issues, open risks, and final PASS status. Approval bureaucracy is INACTIVE.
+
+
+4. Lexical Naming Rules
+N1 — Public names use clear English domain terms with one canonical meaning. UI labels, local abbreviations, database column names, and private implementation names do not automatically become public contract names.
+N2 — External JSON and SDK field names use lowerCamelCase. Types, schemas, classes, and public model names use PascalCase. Constants use the repository or language convention. A repository may use its language convention internally, but public contract names remain stable.
+N3 — Identifiers end with Id, collections use plural nouns, booleans begin with is, has, or can, timestamps end with At, and business dates end with Date when those concepts exist in an approved contract.
+N4 — Money names describe the business concept and representation explicitly. A suffix such as AmountMinor is used only when the approved contract defines integer minor units. Currency, quantity, unit, timezone, and date semantics must be explicit.
+N5 — Event names follow domain.past-tense-fact.vMajor. Commands use a separate approved contract and may not be disguised as completed facts.
+N6 — Examples such as saleId, saleLines, totalAmountMinor, saleStatus, and calculateSaleTotal illustrate naming grammar only. They do not create approved fields, events, statuses, or business rules.
+
+
+5. Accounting-First Public I/O Baseline
+A1 — The first approved public financial contract of the inaugural Accounting program establishes the initial canonical vocabulary for financial input/output names across MAXI.
+A2 — Other programs align their public financial integration names at the contract boundary. Their internal names may remain local when an explicit adapter or registered Bridge mapping converts them to the canonical contract.
+A3 — Accounting’s internal tables, columns, private classes, and storage schema are implementation details. They are not canonical public I/O and must not be copied into other programs as integration contracts.
+A4 — Business applications report approved business facts. They do not send account mappings, debit lines, credit lines, posting decisions, or other journal interpretation owned by Accounting.
+A5 — Accounting-first naming applies to financial integration. Inventory remains authoritative for item, stock, costing, and valuation meaning. Integration Bridge remains authoritative for validation, mapping, deduplication, routing, retry, and processing status.
+A6 — Missing or conflicting mappings are surfaced explicitly. No AI, application, or Bridge component may guess a mapping from similar names.
+
+
+6. Contract Governance
+G1 — Actual events, commands, fields, types, statuses, mappings, account behavior, tax behavior, timezone, units, validation, and fallback behavior exist only after they are defined in an approved versioned contract.
+G2 — Renaming or removing a public field, changing its meaning, requiring a previously optional field, or narrowing an allowed value is a breaking change and requires a major version, RFC, migration plan, compatibility plan, and tests. Affected-owner approval is INACTIVE and advisory.
+G3 — Accounting owner, Integration Bridge owner, and affected program owners may provide advisory review. Review is NON-BLOCKING. Bos Cyo's explicit task instruction is the final authority.
+G4 — The first approved Accounting contract seeds the canonical financial vocabulary. Future contracts reuse that vocabulary or introduce a versioned, approved replacement. Silent synonyms are prohibited.
+
+
+7. Inaugural Accounting Workflow
+W1 — Before source-code implementation, create the Accounting Module Manifest, Module Context, Current State, relevant Domain Rules, System Glossary entries, public contracts, ADRs, Known Issues, Known Pitfalls, Runbook, Error Catalog, migrations, and affected tests required by scope.
+W2 — The Accounting Module Manifest records role assignments: Accounting owner and advisory architecture reviewer Elle; Integration Bridge owner Karen; code execution by Karen under the active task and documented architecture; Bos Cyo as final decision maker. Elle review is advisory and non-blocking.
+W3 — Define Accounting domain meaning and public financial capabilities before defining transport fields. Publish versioned schemas and contract tests before other programs implement adapters.
+W4 — Other programs integrate through approved SDKs, events, APIs, and Bridge mappings. Existing internal names are adapted at the boundary; mass internal renaming requires its own approved migration.
+W5 — An integration is complete only after producer, consumer, compatibility, duplicate, retry, failure, reversal, reconciliation, and recovery tests required by the contract pass.
+
+
+8. Compliance
+DOC-IMPACT: REQUIRED — this document establishes the canonical coding and lexical I/O naming standard for the MAXI ecosystem.
+Status: ACTIVE. This standard applies immediately to the inaugural Accounting program and every future MAXI program or integration.
+No source-code task may be reported complete while required context, contracts, tests, compatibility, documentation, migration recovery, or material ambiguity remains unresolved. Owner/reviewer approval is INACTIVE.
+
+
+9. SaaS Multi-Tenant Coding and Naming
+S1 — Tenant is the canonical term for one subscribing customer company. User identifies a person or service identity; business unit identifies an internal unit belonging to a tenant. These concepts may not be used as synonyms.
+S2 — The canonical tenant identifier is tenantId. Silent alternatives such as companyId, organizationId, clientId, or customerCompanyId are prohibited at shared contract boundaries unless a versioned mapping or replacement is explicitly approved.
+S3 — Every tenant-owned database row must carry tenantId directly or be provably scoped through an enforced parent relationship. Uniqueness constraints, indexes, idempotency keys, cache keys, object paths, and deduplication records must include tenant scope where required to prevent cross-tenant collision.
+S4 — Repository, module, table, field, API, event, job, log, metric, export, backup, and migration naming must make tenant ownership and scope unambiguous.
+S5 — Authorization derives the active tenant from verified identity and tenant membership. Code may not trust a tenantId from an unverified request body, query, URL, event, or client state.
+S6 — Shared services such as Accounting and Inventory keep one canonical implementation while preserving tenant isolation. Consumer applications do not duplicate their source or tables.
+S7 — Tests must cover cross-tenant reads and writes, identifier guessing, duplicate IDs across tenants, cache isolation, event routing, background jobs, exports, imports, backups, recovery, and privileged platform access.
+S8 — Names such as tenantMemberships, subscriptionPlan, subscriptionStatus, and moduleEntitlements illustrate naming grammar only. Allowed values and lifecycle behavior require approved contracts and domain rules.
+
+FILE — scripts/validate-protocol.js
+"use strict";
+
+const fs = require("node:fs");
+const requiredFiles = [
+  "constitution/MAXI_ENGINEERING_CONSTITUTION.md",
+  "quick-gate/MAXI_AI_QUICK_GATE.md",
+  "manuals/MAXI_AI_ONBOARDING.md",
+  "standards/DOCUMENTATION_SYSTEM.md",
+  "standards/INTEGRATION_CONTRACT.md",
+  "standards/CODING_AND_NAMING.md",
+  "templates/MODULE_MANUAL_TEMPLATE.md",
+  "SYNC_POLICY.md",
+  "CHANGELOG.md"
+];
+
+for (const file of requiredFiles) {
+  if (!fs.existsSync(file)) throw new Error(`MISSING_PROTOCOL_FILE: ${file}`);
+  if (!fs.readFileSync(file, "utf8").trim()) throw new Error(`EMPTY_PROTOCOL_FILE: ${file}`);
+}
+
+const constitution = fs.readFileSync(requiredFiles[0], "utf8");
+const naming = fs.readFileSync("standards/CODING_AND_NAMING.md", "utf8");
+if (!constitution.includes("SaaS Multi-Tenant Product Direction")) throw new Error("SAAS_DIRECTION_MISSING");
+if (!naming.includes("tenantId")) throw new Error("TENANT_NAMING_MISSING");
+
+console.log("MAXI protocol validation PASS");
+
+FILE — package.json
+{
+  "name": "maxi-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/validate-protocol.js",
+    "test": "npm run check"
+  }
+}
+
+FILE — .github/workflows/validate-protocol.yml
+name: Validate MAXI Protocol
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
