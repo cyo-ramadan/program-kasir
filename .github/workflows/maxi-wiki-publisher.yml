@@ -1,0 +1,112 @@
+name: MAXI Wiki Publisher
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wiki-requests/*.json"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Publish Wiki
+        env:
+          GH_TOKEN: ${{ secrets.MAXI_REPO_CREATOR_TOKEN }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, sys, tempfile, urllib.request
+          from pathlib import Path
+
+          result = {"success": False, "stage": "initialization"}
+          result_path = Path("wiki-results") / f"{os.environ['GITHUB_RUN_ID']}.json"
+          result_path.parent.mkdir(exist_ok=True)
+
+          try:
+              changed = subprocess.check_output(
+                  ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD", "--", "wiki-requests"],
+                  text=True,
+              ).splitlines()
+              requests = [Path(path) for path in changed if path.endswith(".json")]
+              if not requests:
+                  raise RuntimeError("REQUEST_FILE_NOT_FOUND")
+              request_file = requests[-1]
+              request = json.loads(request_file.read_text())
+              repository = request["repositoryName"]
+              payload = Path(request["payloadPath"])
+              result.update({"requestFile": str(request_file), "repositoryName": repository, "stage": "enable_wiki"})
+
+              api_request = urllib.request.Request(
+                  f"https://api.github.com/repos/cyo-ramadan/{repository}",
+                  data=json.dumps({"has_wiki": True}).encode(),
+                  method="PATCH",
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "Content-Type": "application/json",
+                  },
+              )
+              with urllib.request.urlopen(api_request) as response:
+                  if response.status != 200:
+                      raise RuntimeError(f"WIKI_ENABLE_FAILED_{response.status}")
+
+              result["stage"] = "build_wiki"
+              text = payload.read_text(encoding="utf-8-sig").replace("\r\n", "\n")
+              matches = list(re.finditer(r"(?m)^FILE — (.+?)\n", text))
+              if not matches:
+                  raise RuntimeError("WIKI_PAGES_NOT_FOUND")
+              work = Path(tempfile.mkdtemp())
+              for index, match in enumerate(matches):
+                  destination = work / match.group(1).strip()
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+                  destination.write_text(text[match.end():end].strip() + "\n")
+
+              result["stage"] = "git_push"
+              commands = [
+                  ["git", "init", "-b", "master"],
+                  ["git", "config", "user.name", "MAXI Wiki Publisher"],
+                  ["git", "config", "user.email", "actions@users.noreply.github.com"],
+                  ["git", "add", "."],
+                  ["git", "commit", "-m", "docs: publish MAXI protocol Wiki"],
+              ]
+              for command in commands:
+                  subprocess.run(command, cwd=work, check=True, capture_output=True, text=True)
+              remote = f"https://x-access-token:{os.environ['GH_TOKEN']}@github.com/cyo-ramadan/{repository}.wiki.git"
+              subprocess.run(["git", "remote", "add", "origin", remote], cwd=work, check=True, capture_output=True, text=True)
+              subprocess.run(["git", "push", "--force", "-u", "origin", "master"], cwd=work, check=True, capture_output=True, text=True)
+
+              result.update({
+                  "success": True,
+                  "stage": "complete",
+                  "wikiUrl": f"https://github.com/cyo-ramadan/{repository}/wiki",
+                  "pageCount": len(matches),
+              })
+          except Exception as error:
+              result["error"] = str(error)
+          finally:
+              result_path.write_text(json.dumps(result, indent=2) + "\n")
+
+          if not result["success"]:
+              sys.exit(1)
+          PY
+
+      - name: Publish sanitized Wiki result
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "MAXI Wiki Publisher"
+          git config user.email "actions@users.noreply.github.com"
+          git add wiki-results/
+          git commit -m "chore: record Wiki publication result" || exit 0
+          git pull --rebase
+          git push
