@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "stage": "github_api",
+  "requestFile": "repo-requests/maxi-protocol-1786018086309.json",
+  "repositoryName": "maxi-protocol",
+  "visibility": "private",
+  "httpStatus": 201,
+  "repositoryUrl": "https://github.com/cyo-ramadan/maxi-protocol"
+}
