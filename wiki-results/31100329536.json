@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "stage": "git_push",
+  "requestFile": "wiki-requests/maxi-protocol-1786018269883.json",
+  "repositoryName": "maxi-protocol",
+  "error": "Command '['git', 'push', '--force', '-u', 'origin', 'master']' returned non-zero exit status 128."
+}
