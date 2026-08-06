@@ -20,25 +20,16 @@ This repository is the canonical source of truth. Google Drive remains the human
 
 ## Mandatory synchronization
 
-Every protocol change must update:
-
-- canonical Markdown in this repository;
-- the corresponding Google Drive document;
-- `CHANGELOG.md`;
-- version metadata when applicable.
-
-A change is incomplete while GitHub and Google Drive differ.
+Every protocol change must update canonical Markdown, the corresponding Google Drive document, `CHANGELOG.md`, and version metadata when applicable. A change is incomplete while GitHub and Google Drive differ.
 
 FILE — SYNC_POLICY.md
 # GitHub–Google Drive Synchronization Policy
-
-## Canonical direction
 
 GitHub is written first and is authoritative. Google Drive is updated immediately afterward as the human-readable mirror.
 
 ## Required workflow
 
-1. Update the canonical Markdown.
+1. Update canonical Markdown.
 2. Record the change in `CHANGELOG.md`.
 3. Run protocol validation.
 4. Commit the GitHub change.
@@ -46,7 +37,7 @@ GitHub is written first and is authoritative. Google Drive is updated immediatel
 6. Verify version, headings, normative force, and content parity.
 7. Record PASS, FAIL, or BLOCKED.
 
-Emergency Drive-first edits are provisional. They become official only after synchronization to GitHub and verification.
+Emergency Drive-first edits are provisional until synchronized to GitHub and verified.
 
 ## Source map
 
@@ -62,14 +53,12 @@ Emergency Drive-first edits are provisional. They become official only after syn
 FILE — CHANGELOG.md
 # Changelog
 
-All material MAXI protocol changes are recorded here.
-
 ## 2026-08-06
 
 - Established `maxi-protocol` as the canonical protocol repository.
 - Retained Google Drive as the human-readable mirror.
 - Added mandatory GitHub–Drive synchronization policy.
-- Added SaaS multi-tenant architecture, tenant isolation, tenant naming, integration, and module-readiness rules.
+- Added SaaS multi-tenant architecture and isolation rules.
 
 FILE — constitution/MAXI_ENGINEERING_CONSTITUTION.md
 MAXI AI Engineering Constitution
@@ -901,7 +890,6 @@ S8 — Names such as tenantMemberships, subscriptionPlan, subscriptionStatus, an
 
 FILE — scripts/validate-protocol.js
 "use strict";
-
 const fs = require("node:fs");
 const requiredFiles = [
   "constitution/MAXI_ENGINEERING_CONSTITUTION.md",
@@ -914,17 +902,12 @@ const requiredFiles = [
   "SYNC_POLICY.md",
   "CHANGELOG.md"
 ];
-
 for (const file of requiredFiles) {
   if (!fs.existsSync(file)) throw new Error(`MISSING_PROTOCOL_FILE: ${file}`);
   if (!fs.readFileSync(file, "utf8").trim()) throw new Error(`EMPTY_PROTOCOL_FILE: ${file}`);
 }
-
-const constitution = fs.readFileSync(requiredFiles[0], "utf8");
-const naming = fs.readFileSync("standards/CODING_AND_NAMING.md", "utf8");
-if (!constitution.includes("SaaS Multi-Tenant Product Direction")) throw new Error("SAAS_DIRECTION_MISSING");
-if (!naming.includes("tenantId")) throw new Error("TENANT_NAMING_MISSING");
-
+if (!fs.readFileSync(requiredFiles[0], "utf8").includes("SaaS Multi-Tenant Product Direction")) throw new Error("SAAS_DIRECTION_MISSING");
+if (!fs.readFileSync("standards/CODING_AND_NAMING.md", "utf8").includes("tenantId")) throw new Error("TENANT_NAMING_MISSING");
 console.log("MAXI protocol validation PASS");
 
 FILE — package.json
@@ -937,25 +920,4 @@ FILE — package.json
     "test": "npm run check"
   }
 }
-
-FILE — .github/workflows/validate-protocol.yml
-name: Validate MAXI Protocol
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-permissions:
-  contents: read
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm test
 
