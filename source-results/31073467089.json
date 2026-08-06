@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "stage": "git_push",
+  "requestFile": "source-requests/warehouse-retry-1785992730259.json",
+  "repositoryName": "warehouse",
+  "payloadType": "zip-base64",
+  "error": "Command '['git', 'push', '-u', 'origin', 'main']' returned non-zero exit status 1."
+}
