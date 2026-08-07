@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Stabilize mobile menu card proportions and add protected admin master data"
+}
