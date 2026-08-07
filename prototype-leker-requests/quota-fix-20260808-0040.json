@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Reduce Workers Free invocations: static asset-first routing, 5s visibility-aware polling, static root, documentation fix"
+}
