@@ -1,0 +1,14 @@
+{
+  "name": "maxi-accounting-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dependency-free MAXI Accounting foundation prototype.",
+  "scripts": {
+    "check": "node --check src/accounting-core.js && node --check src/app.js",
+    "test": "node --test tests/accounting-core.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}

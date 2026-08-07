@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxi.internal/contracts/accounting-state.schema.json",
+  "title": "MAXI Accounting Foundation Private State",
+  "description": "Private browser-state schema. This is not a public API or event contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "moduleVersion",
+    "nextAccountNumber",
+    "nextJournalNumber",
+    "nextAuditNumber",
+    "accounts",
+    "journals",
+    "auditEntries"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "moduleVersion": { "const": "0.1.0" },
+    "nextAccountNumber": { "type": "integer", "minimum": 1 },
+    "nextJournalNumber": { "type": "integer", "minimum": 1 },
+    "nextAuditNumber": { "type": "integer", "minimum": 1 },
+    "accounts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/account" }
+    },
+    "journals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/journal" }
+    },
+    "auditEntries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/auditEntry" }
+    }
+  },
+  "$defs": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "amountMinor": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accountId", "accountCode", "accountName", "accountType", "isActive", "createdAt", "updatedAt"],
+      "properties": {
+        "accountId": { "type": "string", "pattern": "^ACC-[0-9]{6}$" },
+        "accountCode": { "type": "string", "minLength": 1 },
+        "accountName": { "type": "string", "minLength": 1 },
+        "accountType": { "enum": ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"] },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "journalLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["journalLineId", "accountId", "debitAmountMinor", "creditAmountMinor"],
+      "properties": {
+        "journalLineId": { "type": "string", "pattern": "^JRN-[0-9]{6}-L[0-9]{3}$" },
+        "accountId": { "type": "string", "pattern": "^ACC-[0-9]{6}$" },
+        "debitAmountMinor": { "$ref": "#/$defs/amountMinor" },
+        "creditAmountMinor": { "$ref": "#/$defs/amountMinor" }
+      }
+    },
+    "journal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["journalId", "journalStatus", "businessDate", "description", "sourceReference", "lines", "reversalOfJournalId", "createdAt", "updatedAt", "postedAt"],
+      "properties": {
+        "journalId": { "type": "string", "pattern": "^JRN-[0-9]{6}$" },
+        "journalStatus": { "enum": ["DRAFT", "POSTED"] },
+        "businessDate": { "type": "string", "format": "date" },
+        "description": { "type": "string", "minLength": 1 },
+        "sourceReference": { "type": "string" },
+        "lines": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/journalLine" } },
+        "reversalOfJournalId": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^JRN-[0-9]{6}$" }
+          ]
+        },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" },
+        "postedAt": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/timestamp" }
+          ]
+        }
+      }
+    },
+    "auditEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["auditEntryId", "action", "entityType", "entityId", "occurredAt", "details"],
+      "properties": {
+        "auditEntryId": { "type": "string", "pattern": "^AUD-[0-9]{6}$" },
+        "action": { "type": "string", "minLength": 1 },
+        "entityType": { "enum": ["ACCOUNT", "JOURNAL"] },
+        "entityId": { "type": "string", "minLength": 1 },
+        "occurredAt": { "$ref": "#/$defs/timestamp" },
+        "details": { "type": "object" }
+      }
+    }
+  }
+}
