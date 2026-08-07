@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "stage": "verification",
+  "error": "LIVE_VERIFICATION_FAILED",
+  "repositoryUrl": "https://github.com/cyo-ramadan/prototype-leker",
+  "liveUrl": "https://prototype-leker.ancient-confidence.workers.dev"
+}
