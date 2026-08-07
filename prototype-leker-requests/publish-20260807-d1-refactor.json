@@ -1,0 +1,13 @@
+{
+  "action": "publish",
+  "target": "cyo-ramadan/prototype-leker",
+  "change": "refactor-durable-object-to-d1",
+  "database": {
+    "binding": "DB",
+    "name": "maxi-db",
+    "id": "363b2f8d-f036-4def-bd9b-f04b0d20dc1f",
+    "account": "Dwicahya"
+  },
+  "docImpact": "REQUIRED",
+  "requestedAt": "2026-08-07T21:50:00+07:00"
+}
