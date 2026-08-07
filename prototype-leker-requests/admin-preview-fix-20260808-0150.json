@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Expose admin master preview while locked and clarify API quota errors"
+}
