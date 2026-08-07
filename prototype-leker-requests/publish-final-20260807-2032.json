@@ -1,0 +1,7 @@
+{
+  "repositoryName": "prototype-leker",
+  "requestedBy": "Bos Cyo",
+  "purpose": "Final redeploy after disabling Cloudflare Static Assets HTML auto redirects",
+  "expectedMenuCount": 20,
+  "expectedStatusFlow": ["NEW", "PREPARING", "READY", "COMPLETED"]
+}
