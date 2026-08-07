@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Restore customer catalog rendering during Workers Free API quota limits with a static menu fallback; preserve existing UI and D1 backend"
+}
