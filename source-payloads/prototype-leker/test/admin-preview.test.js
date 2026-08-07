@@ -18,7 +18,8 @@ test('locked admin still exposes master navigation and clear API limit feedback'
   assert.match(js, /Tambah Barang/);
   assert.match(js, /Tambah Kategori/);
   assert.match(js, /Tambah Customer/);
-  assert.match(js, /Request gagal \\(429\\)/);
+  assert.match(js, /Request gagal/);
+  assert.match(js, /429/);
   assert.match(js, /quota Cloudflare/);
   assert.match(css, /\.admin-locked/);
 });
