@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "reason": "retry after disconnecting old Cloudflare Worker and reconnecting prototype-leker-v2",
+  "targetWorker": "prototype-leker-v2"
+}
