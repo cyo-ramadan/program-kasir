@@ -1,0 +1,7 @@
+{
+  "repositoryName": "prototype-leker",
+  "requestedBy": "Bos Cyo",
+  "purpose": "Redeploy Prototype Leker with modern Durable Object RPC and full live smoke test",
+  "expectedMenuCount": 20,
+  "expectedStatusFlow": ["NEW", "PREPARING", "READY", "COMPLETED"]
+}
