@@ -56,7 +56,15 @@ npx wrangler d1 migrations apply DB --remote
 npx wrangler deploy
 ```
 
-Untuk Cloudflare Git integration, gunakan deploy command `npm run deploy` sehingga unapplied D1 migrations dijalankan sebelum Worker diperbarui.
+Cloudflare Workers Builds production configuration:
+
+- Repository: `cyo-ramadan/prototype-leker`
+- Production branch: `main`
+- Build command: `None`
+- Deploy command: `npm run deploy`
+- Root directory: `/`
+
+Dengan konfigurasi tersebut, unapplied D1 migrations dijalankan sebelum Worker `prototype-leker-v2` diperbarui.
 
 ## API
 
@@ -69,4 +77,4 @@ Untuk Cloudflare Git integration, gunakan deploy command `npm run deploy` sehing
 
 ## DOC-IMPACT
 
-**REQUIRED** — Worker permanen diarahkan ke `prototype-leker-v2`, environment prototype tetap di Daily Napkin, D1 binding tetap ke `prototype-leker-db`, dan deployment flow menjalankan migration sebelum Worker deploy.
+**REQUIRED** — Worker permanen diarahkan ke `prototype-leker-v2`, Workers Builds memakai deploy command `npm run deploy`, environment prototype tetap di Daily Napkin, D1 binding tetap ke `prototype-leker-db`, dan deployment flow menjalankan migration sebelum Worker deploy.
