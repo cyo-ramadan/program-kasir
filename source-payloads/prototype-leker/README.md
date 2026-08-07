@@ -20,12 +20,15 @@ Prototype self-ordering kiosk untuk produk leker. Customer memilih menu di UI ki
 
 ## Runtime architecture
 
+Environment prototype dipisahkan dari environment resmi MAXI:
+
 - GitHub: source code
+- Cloudflare account: **Daily Napkin**
 - Cloudflare Worker: HTTP API + static UI
 - Cloudflare D1: relational persistence melalui binding `env.DB`
-- Target D1: `maxi-db` (`363b2f8d-f036-4def-bd9b-f04b0d20dc1f`)
+- Prototype D1: `prototype-leker-db` (`6977b54c-afce-4275-a0ad-d28e7d942e19`)
 
-Worker dan D1 harus dideploy pada Cloudflare account yang memiliki database `maxi-db`.
+Database resmi `maxi-db` di account **Dwicahya** tidak digunakan oleh prototype ini.
 
 ## Database schema
 
@@ -38,17 +41,22 @@ Migration `migrations/0001_leker_order_schema.sql` membuat dan mengindeks:
 
 Migration juga seed 20 produk leker dan memasang trigger untuk mencatat perubahan status ke history.
 
-Apply migration ke database remote sebelum menjalankan Worker:
+## Deployment
+
+Apply migration dan deploy Worker dengan satu command:
 
 ```bash
-npx wrangler d1 migrations apply maxi-db --remote
+npm run deploy
 ```
 
-Lalu deploy:
+Script tersebut menjalankan:
 
 ```bash
+npx wrangler d1 migrations apply DB --remote
 npx wrangler deploy
 ```
+
+Untuk Cloudflare Git integration, gunakan deploy command `npm run deploy` sehingga unapplied D1 migrations dijalankan sebelum Worker diperbarui.
 
 ## API
 
@@ -61,8 +69,4 @@ npx wrangler deploy
 
 ## DOC-IMPACT
 
-**REQUIRED** — backend persistence berubah dari Durable Object menjadi D1 SQL, entrypoint dipisah menjadi modul, dan migration database ditambahkan.
-
-## Known deployment constraint
-
-Worker `prototype-leker` yang sebelumnya berada di account **Daily Napkin** tidak dapat memakai D1 binding milik account **Dwicahya** secara langsung. Deploy source ini dari account **Dwicahya** agar binding `env.DB` mengarah ke `maxi-db` milik account tersebut.
+**REQUIRED** — environment prototype dipisahkan dari database resmi, D1 binding diarahkan ke `prototype-leker-db`, dan deployment flow menjalankan migration sebelum Worker deploy.
