@@ -78,29 +78,50 @@ jobs:
             python3 - <<'PY'
           import json
           import os
+          import time
+          import urllib.error
           import urllib.request
 
           base = os.environ["BASE_URL"].rstrip("/")
+          browser_ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
 
-          def request(path, method="GET", payload=None):
+          def request(path, method="GET", payload=None, expect_json=True, attempts=12):
               body = None
-              headers = {"Accept": "application/json"}
+              headers = {"Accept": "application/json, text/html;q=0.9, */*;q=0.8", "User-Agent": browser_ua}
               if payload is not None:
                   body = json.dumps(payload).encode()
                   headers["Content-Type"] = "application/json"
-              req = urllib.request.Request(base + path, data=body, method=method, headers=headers)
-              with urllib.request.urlopen(req, timeout=20) as response:
-                  raw = response.read().decode()
-                  content_type = response.headers.get("content-type", "")
-                  return response.status, json.loads(raw) if "json" in content_type else raw
+              last_error = None
+              for attempt in range(attempts):
+                  req = urllib.request.Request(base + path, data=body, method=method, headers=headers)
+                  try:
+                      with urllib.request.urlopen(req, timeout=20) as response:
+                          raw = response.read().decode()
+                          if expect_json:
+                              return response.status, json.loads(raw)
+                          return response.status, raw
+                  except urllib.error.HTTPError as exc:
+                      error_body = exc.read().decode(errors="replace")
+                      last_error = f"HTTP {exc.code}: {error_body[:500]}"
+                      if exc.code not in (403, 404, 429, 500, 502, 503, 504):
+                          raise RuntimeError(last_error)
+                  except Exception as exc:
+                      last_error = repr(exc)
+                  if attempt < attempts - 1:
+                      time.sleep(2)
+              raise RuntimeError(f"request failed after retries: {path}: {last_error}")
 
           status, menu = request("/api/menu")
           assert status == 200, status
           assert len(menu) == 20, f"expected 20 menu items, got {len(menu)}"
 
-          with urllib.request.urlopen(base + "/customer", timeout=20) as response:
-              customer_html = response.read().decode()
+          status, customer_html = request("/customer", expect_json=False)
+          assert status == 200
           assert "MAXI LEKER" in customer_html
+
+          status, cashier_html = request("/cashier", expect_json=False)
+          assert status == 200
+          assert "Kasir Dashboard" in cashier_html
 
           status, order = request("/api/orders", "POST", {
               "customerName": "Smoke Test",
@@ -125,7 +146,7 @@ jobs:
           status, reset_result = request("/api/reset", "POST", {})
           assert status == 200 and reset_result["ok"] is True
 
-          print("PASS: menu=20, customer UI, order create, total, NEW->PREPARING->READY->COMPLETED")
+          print("PASS: menu=20, customer+cashier UI, order create, total, NEW->PREPARING->READY->COMPLETED")
           PY
             if [ $? -ne 0 ]; then error="LIVE_VERIFICATION_FAILED"; fi
           fi
