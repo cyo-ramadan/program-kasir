@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  publish-and-deploy:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Check out MAXI tooling repo
@@ -18,155 +18,53 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Publish Prototype Leker and deploy Cloudflare
+      - name: Validate and publish Prototype Leker source
         env:
           GH_TOKEN: ${{ secrets.MAXI_REPO_CREATOR_TOKEN }}
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
           RESULT_DIR="$GITHUB_WORKSPACE/prototype-leker-results"
           RESULT_FILE="$RESULT_DIR/$GITHUB_RUN_ID.json"
-          mkdir -p "$RESULT_DIR"
           WORK_DIR="$RUNNER_TEMP/prototype-leker"
+          REPO_URL="https://github.com/cyo-ramadan/prototype-leker"
+
+          mkdir -p "$RESULT_DIR"
           rm -rf "$WORK_DIR"
           mkdir -p "$WORK_DIR"
           cp -R "$GITHUB_WORKSPACE/source-payloads/prototype-leker/." "$WORK_DIR/"
 
-          stage="validation"
-          error=""
-          live_url=""
-          repo_url="https://github.com/cyo-ramadan/prototype-leker"
+          cd "$WORK_DIR"
+          test -f wrangler.jsonc
+          test -f src/index.js
+          test -f package.json
 
-          if [ ! -f "$WORK_DIR/worker.js" ] || [ ! -f "$WORK_DIR/wrangler.jsonc" ]; then
-            error="SOURCE_INCOMPLETE"
-          fi
+          npm test
+          npm run check
 
-          if [ -z "$error" ]; then
-            stage="git_push"
-            cd "$WORK_DIR"
-            git init -b main
-            git config user.name "MAXI Prototype Publisher"
-            git config user.email "actions@users.noreply.github.com"
-            git add .
-            git commit -m "feat: publish Prototype Leker"
-            git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/cyo-ramadan/prototype-leker.git"
-            git push --force -u origin main
-            if [ $? -ne 0 ]; then error="GIT_PUSH_FAILED"; fi
-          fi
+          git init -b main
+          git config user.name "MAXI Prototype Publisher"
+          git config user.email "actions@users.noreply.github.com"
+          git add .
+          git commit -m "feat: publish Prototype Leker"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/cyo-ramadan/prototype-leker.git"
+          git push --force -u origin main
 
-          if [ -z "$error" ]; then
-            stage="cloudflare_deploy"
-            cd "$WORK_DIR"
-            node --check worker.js
-            if [ $? -ne 0 ]; then
-              error="WORKER_SYNTAX_INVALID"
-            else
-              npx --yes wrangler@latest deploy --temporary 2>&1 | tee deploy.log
-              deploy_code=${PIPESTATUS[0]}
-              if [ $deploy_code -ne 0 ]; then
-                error="CLOUDFLARE_DEPLOY_FAILED"
-              else
-                live_url=$(grep -Eo 'https://[^[:space:]]+' deploy.log | sed 's/[),]$//' | grep -E 'workers\.dev|pages\.dev' | tail -1)
-                if [ -z "$live_url" ]; then error="LIVE_URL_NOT_FOUND"; fi
-              fi
-            fi
-          fi
-
-          if [ -z "$error" ]; then
-            stage="verification"
-            export BASE_URL="$live_url"
-            python3 - <<'PY'
-          import json
-          import os
-          import time
-          import urllib.error
-          import urllib.request
-
-          base = os.environ["BASE_URL"].rstrip("/")
-          browser_ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
-
-          def request(path, method="GET", payload=None, expect_json=True, attempts=12):
-              body = None
-              headers = {"Accept": "application/json, text/html;q=0.9, */*;q=0.8", "User-Agent": browser_ua}
-              if payload is not None:
-                  body = json.dumps(payload).encode()
-                  headers["Content-Type"] = "application/json"
-              last_error = None
-              for attempt in range(attempts):
-                  req = urllib.request.Request(base + path, data=body, method=method, headers=headers)
-                  try:
-                      with urllib.request.urlopen(req, timeout=20) as response:
-                          raw = response.read().decode()
-                          if expect_json:
-                              return response.status, json.loads(raw)
-                          return response.status, raw
-                  except urllib.error.HTTPError as exc:
-                      error_body = exc.read().decode(errors="replace")
-                      last_error = f"HTTP {exc.code}: {error_body[:500]}"
-                      if exc.code not in (403, 404, 429, 500, 502, 503, 504):
-                          raise RuntimeError(last_error)
-                  except Exception as exc:
-                      last_error = repr(exc)
-                  if attempt < attempts - 1:
-                      time.sleep(2)
-              raise RuntimeError(f"request failed after retries: {path}: {last_error}")
-
-          status, menu = request("/api/menu")
-          assert status == 200, status
-          assert len(menu) == 20, f"expected 20 menu items, got {len(menu)}"
-
-          status, customer_html = request("/customer", expect_json=False)
-          assert status == 200
-          assert "MAXI LEKER" in customer_html
-
-          status, cashier_html = request("/cashier", expect_json=False)
-          assert status == 200
-          assert "Kasir Dashboard" in cashier_html
-
-          status, order = request("/api/orders", "POST", {
-              "customerName": "Smoke Test",
-              "tableLabel": "CI",
-              "generalNote": "automated verification",
-              "items": [{"menuId": 1, "qty": 2, "note": "test"}],
-          })
-          assert status == 201
-          assert order["status"] == "NEW"
-          assert order["total"] == 16000
-          order_id = order["id"]
-
-          for next_status in ["PREPARING", "READY", "COMPLETED"]:
-              status, updated = request(f"/api/orders/{order_id}/status", "PATCH", {"status": next_status})
-              assert status == 200
-              assert updated["status"] == next_status
-
-          status, final_order = request(f"/api/orders/{order_id}")
-          assert status == 200
-          assert final_order["status"] == "COMPLETED"
-
-          status, reset_result = request("/api/reset", "POST", {})
-          assert status == 200 and reset_result["ok"] is True
-
-          print("PASS: menu=20, customer+cashier UI, order create, total, NEW->PREPARING->READY->COMPLETED")
-          PY
-            if [ $? -ne 0 ]; then error="LIVE_VERIFICATION_FAILED"; fi
-          fi
-
-          export RESULT_FILE stage error live_url repo_url
+          export RESULT_FILE REPO_URL
           python3 - <<'PY'
           import json, os
           payload = {
-              "success": not bool(os.environ.get("error")),
-              "stage": os.environ.get("stage"),
-              "error": os.environ.get("error") or None,
-              "repositoryUrl": os.environ.get("repo_url"),
-              "liveUrl": os.environ.get("live_url") or None,
+              "success": True,
+              "stage": "source_published",
+              "error": None,
+              "repositoryUrl": os.environ["REPO_URL"],
+              "liveUrl": None,
+              "deployment": "Managed separately in the permanent Cloudflare account"
           }
           with open(os.environ["RESULT_FILE"], "w", encoding="utf-8") as handle:
               json.dump(payload, handle, indent=2)
               handle.write("\n")
           PY
-
-          if [ -n "$error" ]; then exit 1; fi
 
       - name: Publish sanitized result
         if: always()
