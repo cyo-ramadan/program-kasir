@@ -1,0 +1,7 @@
+{
+  "repositoryName": "prototype-leker",
+  "requestedBy": "Bos Cyo",
+  "purpose": "Redeploy Prototype Leker and verify after Cloudflare propagation with browser-like requests",
+  "expectedMenuCount": 20,
+  "expectedStatusFlow": ["NEW", "PREPARING", "READY", "COMPLETED"]
+}
