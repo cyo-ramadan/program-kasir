@@ -1,3 +1,5 @@
+import { DurableObject } from "cloudflare:workers";
+
 const MENU = [
   { id: 1, name: 'Leker Cokelat', price: 8000, category: 'Classic', emoji: '🍫' },
   { id: 2, name: 'Leker Keju', price: 9000, category: 'Classic', emoji: '🧀' },
@@ -21,18 +23,18 @@ const MENU = [
   { id: 20, name: 'Leker Special Maxi', price: 15000, category: 'Signature', emoji: '👑' }
 ];
 
-const json = (payload, status = 200) => new Response(JSON.stringify(payload), {
+const json = (payload, status = 200) => Response.json(payload, {
   status,
-  headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+  headers: { 'cache-control': 'no-store' }
 });
 
 const sanitizeText = (value, max = 240) => String(value || '').trim().slice(0, max);
 
-function validateItems(items) {
+function normalizeItems(items) {
   if (!Array.isArray(items) || items.length === 0) return null;
   const normalized = [];
   for (const item of items) {
-    const product = MENU.find(m => m.id === Number(item.menuId));
+    const product = MENU.find(menuItem => menuItem.id === Number(item.menuId));
     if (!product) return null;
     const qty = Math.max(1, Math.min(20, Number(item.qty) || 1));
     normalized.push({
@@ -46,101 +48,128 @@ function validateItems(items) {
   return normalized;
 }
 
-export class OrderStore {
-  constructor(state) {
-    this.state = state;
-  }
-
+export class OrderStore extends DurableObject {
   async getOrders() {
-    return (await this.state.storage.get('orders')) || [];
+    return (await this.ctx.storage.get('orders')) || [];
   }
 
-  async putOrders(orders) {
-    await this.state.storage.put('orders', orders);
-  }
-
-  orderNumber(orders) {
-    const today = new Date().toISOString().slice(0, 10);
-    const count = orders.filter(order => order.createdAt.slice(0, 10) === today).length + 1;
-    return `LKR-${String(count).padStart(3, '0')}`;
-  }
-
-  async fetch(request) {
-    const url = new URL(request.url);
-    const pathname = url.pathname;
+  async listOrders() {
     const orders = await this.getOrders();
+    return [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
 
-    if (request.method === 'GET' && pathname === '/api/menu') return json(MENU);
-    if (request.method === 'GET' && pathname === '/api/orders') {
-      return json([...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+  async getOrder(orderId) {
+    const orders = await this.getOrders();
+    return orders.find(order => order.id === orderId) || null;
+  }
+
+  async createOrder(payload) {
+    const items = normalizeItems(payload?.items);
+    if (!items) {
+      return { ok: false, status: 400, error: 'Pesanan harus memiliki item menu yang valid.' };
     }
 
-    const orderMatch = pathname.match(/^\/api\/orders\/([^/]+)$/);
-    const statusMatch = pathname.match(/^\/api\/orders\/([^/]+)\/status$/);
+    const orders = await this.getOrders();
+    const now = new Date().toISOString();
+    const today = now.slice(0, 10);
+    const dailyCount = orders.filter(order => order.createdAt.slice(0, 10) === today).length + 1;
+    const order = {
+      id: `ord_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
+      orderNo: `LKR-${String(dailyCount).padStart(3, '0')}`,
+      customerName: sanitizeText(payload?.customerName, 60) || 'Customer',
+      tableLabel: sanitizeText(payload?.tableLabel, 40) || 'Kiosk',
+      generalNote: sanitizeText(payload?.generalNote, 240),
+      items,
+      total: items.reduce((sum, item) => sum + item.price * item.qty, 0),
+      status: 'NEW',
+      createdAt: now,
+      updatedAt: now,
+      readyAt: null,
+      completedAt: null
+    };
 
-    if (request.method === 'GET' && orderMatch) {
-      const order = orders.find(item => item.id === orderMatch[1]);
-      return order ? json(order) : json({ error: 'Order not found' }, 404);
+    await this.ctx.storage.put('orders', [...orders, order]);
+    return { ok: true, order };
+  }
+
+  async updateStatus(orderId, nextStatus) {
+    const allowed = ['NEW', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'];
+    if (!allowed.includes(nextStatus)) {
+      return { ok: false, status: 400, error: 'Status tidak valid.' };
     }
 
-    if (request.method === 'POST' && pathname === '/api/orders') {
-      let body;
-      try { body = await request.json(); }
-      catch { return json({ error: 'Payload JSON tidak valid.' }, 400); }
-      const items = validateItems(body.items);
-      if (!items) return json({ error: 'Pesanan harus memiliki item menu yang valid.' }, 400);
-      const now = new Date().toISOString();
-      const order = {
-        id: `ord_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
-        orderNo: this.orderNumber(orders),
-        customerName: sanitizeText(body.customerName, 60) || 'Customer',
-        tableLabel: sanitizeText(body.tableLabel, 40) || 'Kiosk',
-        generalNote: sanitizeText(body.generalNote, 240),
-        items,
-        total: items.reduce((sum, item) => sum + item.price * item.qty, 0),
-        status: 'NEW',
-        createdAt: now,
-        updatedAt: now,
-        readyAt: null,
-        completedAt: null
-      };
-      orders.push(order);
-      await this.putOrders(orders);
-      return json(order, 201);
+    const orders = await this.getOrders();
+    const index = orders.findIndex(order => order.id === orderId);
+    if (index === -1) {
+      return { ok: false, status: 404, error: 'Order not found' };
     }
 
-    if (request.method === 'PATCH' && statusMatch) {
-      let body;
-      try { body = await request.json(); }
-      catch { return json({ error: 'Payload JSON tidak valid.' }, 400); }
-      const allowed = ['NEW', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'];
-      if (!allowed.includes(body.status)) return json({ error: 'Status tidak valid.' }, 400);
-      const order = orders.find(item => item.id === statusMatch[1]);
-      if (!order) return json({ error: 'Order not found' }, 404);
-      const now = new Date().toISOString();
-      order.status = body.status;
-      order.updatedAt = now;
-      if (body.status === 'READY') order.readyAt = now;
-      if (body.status === 'COMPLETED') order.completedAt = now;
-      await this.putOrders(orders);
-      return json(order);
-    }
+    const now = new Date().toISOString();
+    const order = { ...orders[index], status: nextStatus, updatedAt: now };
+    if (nextStatus === 'READY') order.readyAt = now;
+    if (nextStatus === 'COMPLETED') order.completedAt = now;
+    orders[index] = order;
+    await this.ctx.storage.put('orders', orders);
+    return { ok: true, order };
+  }
 
-    if (request.method === 'POST' && pathname === '/api/reset') {
-      await this.putOrders([]);
-      return json({ ok: true });
-    }
+  async resetOrders() {
+    await this.ctx.storage.delete('orders');
+    return { ok: true };
+  }
+}
 
-    return json({ error: 'Not found' }, 404);
+async function readJson(request) {
+  try {
+    return { ok: true, value: await request.json() };
+  } catch {
+    return { ok: false };
   }
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/')) {
-      const id = env.ORDER_STORE.idFromName('prototype-leker-global');
-      return env.ORDER_STORE.get(id).fetch(request);
+    const pathname = url.pathname;
+
+    if (request.method === 'GET' && pathname === '/api/menu') {
+      return json(MENU);
+    }
+
+    if (pathname.startsWith('/api/')) {
+      const store = env.ORDER_STORE.getByName('prototype-leker-store-01');
+
+      if (request.method === 'GET' && pathname === '/api/orders') {
+        return json(await store.listOrders());
+      }
+
+      const orderMatch = pathname.match(/^\/api\/orders\/([^/]+)$/);
+      const statusMatch = pathname.match(/^\/api\/orders\/([^/]+)\/status$/);
+
+      if (request.method === 'GET' && orderMatch) {
+        const order = await store.getOrder(orderMatch[1]);
+        return order ? json(order) : json({ error: 'Order not found' }, 404);
+      }
+
+      if (request.method === 'POST' && pathname === '/api/orders') {
+        const body = await readJson(request);
+        if (!body.ok) return json({ error: 'Payload JSON tidak valid.' }, 400);
+        const result = await store.createOrder(body.value);
+        return result.ok ? json(result.order, 201) : json({ error: result.error }, result.status);
+      }
+
+      if (request.method === 'PATCH' && statusMatch) {
+        const body = await readJson(request);
+        if (!body.ok) return json({ error: 'Payload JSON tidak valid.' }, 400);
+        const result = await store.updateStatus(statusMatch[1], body.value?.status);
+        return result.ok ? json(result.order) : json({ error: result.error }, result.status);
+      }
+
+      if (request.method === 'POST' && pathname === '/api/reset') {
+        return json(await store.resetOrders());
+      }
+
+      return json({ error: 'Not found' }, 404);
     }
 
     const routes = {
@@ -148,7 +177,7 @@ export default {
       '/customer': '/customer.html',
       '/cashier': '/cashier.html'
     };
-    const assetPath = routes[url.pathname] || url.pathname;
+    const assetPath = routes[pathname] || pathname;
     const assetUrl = new URL(request.url);
     assetUrl.pathname = assetPath;
     return env.ASSETS.fetch(new Request(assetUrl, request));
