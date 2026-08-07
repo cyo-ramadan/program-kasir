@@ -1,0 +1,5 @@
+{
+  "repositoryName": "prototype-leker",
+  "visibility": "public",
+  "description": "Prototype self-ordering kiosk Leker: customer kiosk + cashier queue + Cloudflare multi-device order status"
+}
