@@ -1,0 +1,109 @@
+name: Prototype Leker Publisher
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prototype-leker-requests/*.json"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out MAXI tooling repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Publish Prototype Leker and deploy Cloudflare
+        env:
+          GH_TOKEN: ${{ secrets.MAXI_REPO_CREATOR_TOKEN }}
+        shell: bash
+        run: |
+          set +e
+          RESULT_DIR="$GITHUB_WORKSPACE/prototype-leker-results"
+          RESULT_FILE="$RESULT_DIR/$GITHUB_RUN_ID.json"
+          mkdir -p "$RESULT_DIR"
+          WORK_DIR="$RUNNER_TEMP/prototype-leker"
+          rm -rf "$WORK_DIR"
+          mkdir -p "$WORK_DIR"
+          cp -R "$GITHUB_WORKSPACE/source-payloads/prototype-leker/." "$WORK_DIR/"
+
+          stage="validation"
+          error=""
+          live_url=""
+          repo_url="https://github.com/cyo-ramadan/prototype-leker"
+
+          if [ ! -f "$WORK_DIR/worker.js" ] || [ ! -f "$WORK_DIR/wrangler.jsonc" ]; then
+            error="SOURCE_INCOMPLETE"
+          fi
+
+          if [ -z "$error" ]; then
+            stage="git_push"
+            cd "$WORK_DIR"
+            git init -b main
+            git config user.name "MAXI Prototype Publisher"
+            git config user.email "actions@users.noreply.github.com"
+            git add .
+            git commit -m "feat: publish Prototype Leker"
+            git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/cyo-ramadan/prototype-leker.git"
+            git push --force -u origin main
+            if [ $? -ne 0 ]; then error="GIT_PUSH_FAILED"; fi
+          fi
+
+          if [ -z "$error" ]; then
+            stage="cloudflare_deploy"
+            cd "$WORK_DIR"
+            node --check worker.js
+            npx --yes wrangler@latest deploy --temporary 2>&1 | tee deploy.log
+            deploy_code=${PIPESTATUS[0]}
+            if [ $deploy_code -ne 0 ]; then
+              error="CLOUDFLARE_DEPLOY_FAILED"
+            else
+              live_url=$(grep -Eo 'https://[^[:space:]]+' deploy.log | sed 's/[),]$//' | grep -E 'workers\.dev|pages\.dev' | tail -1)
+              if [ -z "$live_url" ]; then error="LIVE_URL_NOT_FOUND"; fi
+            fi
+          fi
+
+          if [ -z "$error" ]; then
+            stage="verification"
+            curl -fsS "$live_url/api/menu" -o menu.json
+            python3 - <<'PY'
+          import json
+          with open('menu.json', encoding='utf-8') as handle:
+              menu = json.load(handle)
+          assert len(menu) == 20, f"expected 20 menu items, got {len(menu)}"
+          PY
+            if [ $? -ne 0 ]; then error="LIVE_VERIFICATION_FAILED"; fi
+          fi
+
+          export RESULT_FILE stage error live_url repo_url
+          python3 - <<'PY'
+          import json, os
+          payload = {
+              "success": not bool(os.environ.get("error")),
+              "stage": os.environ.get("stage"),
+              "error": os.environ.get("error") or None,
+              "repositoryUrl": os.environ.get("repo_url"),
+              "liveUrl": os.environ.get("live_url") or None,
+          }
+          with open(os.environ["RESULT_FILE"], "w", encoding="utf-8") as handle:
+              json.dump(payload, handle, indent=2)
+              handle.write("\n")
+          PY
+
+          if [ -n "$error" ]; then exit 1; fi
+
+      - name: Publish sanitized result
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "MAXI Prototype Publisher"
+          git config user.email "actions@users.noreply.github.com"
+          git add prototype-leker-results/
+          git commit -m "chore: record Prototype Leker publish result" || exit 0
+          git pull --rebase
+          git push
