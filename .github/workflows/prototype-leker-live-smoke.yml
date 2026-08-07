@@ -1,0 +1,72 @@
+name: Prototype Leker Live Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prototype-leker-live-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BASE_URL: https://prototype-leker-v2.daily-napkin.workers.dev
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Test live customer, cashier, API, D1 order lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo '1/7 customer page'
+          curl -fsS --retry 3 --retry-delay 2 "$BASE_URL/customer" >/tmp/customer.html
+          test -s /tmp/customer.html
+
+          echo '2/7 cashier page'
+          curl -fsS --retry 3 --retry-delay 2 "$BASE_URL/cashier" >/tmp/cashier.html
+          test -s /tmp/cashier.html
+
+          echo '3/7 menu API + D1 seed'
+          curl -fsS --retry 3 --retry-delay 2 "$BASE_URL/api/menu" >/tmp/menu.json
+          MENU_COUNT="$(jq 'length' /tmp/menu.json)"
+          test "$MENU_COUNT" -eq 20
+
+          echo '4/7 create order'
+          CREATE_BODY='{"customerName":"MAXI LIVE SMOKE","tableLabel":"AUTOMATED TEST","generalNote":"Safe automated E2E test","items":[{"menuId":1,"qty":1,"note":"live smoke"}]}'
+          curl -fsS -X POST "$BASE_URL/api/orders" \
+            -H 'content-type: application/json' \
+            --data "$CREATE_BODY" >/tmp/order.json
+          ORDER_ID="$(jq -r '.id' /tmp/order.json)"
+          ORDER_NO="$(jq -r '.orderNo' /tmp/order.json)"
+          test -n "$ORDER_ID"
+          test "$ORDER_ID" != "null"
+          jq -e '.status == "NEW"' /tmp/order.json >/dev/null
+
+          echo '5/7 cashier-visible order + PREPARING'
+          curl -fsS "$BASE_URL/api/orders" >/tmp/orders.json
+          jq -e --arg id "$ORDER_ID" 'map(select(.id == $id)) | length == 1' /tmp/orders.json >/dev/null
+          curl -fsS -X PATCH "$BASE_URL/api/orders/$ORDER_ID/status" \
+            -H 'content-type: application/json' \
+            --data '{"status":"PREPARING"}' >/tmp/preparing.json
+          jq -e '.status == "PREPARING"' /tmp/preparing.json >/dev/null
+
+          echo '6/7 READY + customer polling endpoint'
+          curl -fsS -X PATCH "$BASE_URL/api/orders/$ORDER_ID/status" \
+            -H 'content-type: application/json' \
+            --data '{"status":"READY"}' >/tmp/ready.json
+          jq -e '.status == "READY"' /tmp/ready.json >/dev/null
+          curl -fsS "$BASE_URL/api/orders/$ORDER_ID" >/tmp/customer-poll.json
+          jq -e '.status == "READY"' /tmp/customer-poll.json >/dev/null
+
+          echo '7/7 complete test order'
+          curl -fsS -X PATCH "$BASE_URL/api/orders/$ORDER_ID/status" \
+            -H 'content-type: application/json' \
+            --data '{"status":"COMPLETED"}' >/tmp/completed.json
+          jq -e '.status == "COMPLETED"' /tmp/completed.json >/dev/null
+
+          echo "LIVE_SMOKE_PASS order=$ORDER_NO id=$ORDER_ID menu_count=$MENU_COUNT"
