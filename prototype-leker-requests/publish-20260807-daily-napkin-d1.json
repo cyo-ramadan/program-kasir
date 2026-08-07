@@ -1,0 +1,12 @@
+{
+  "requestedAt": "2026-08-07T22:09:00+07:00",
+  "target": "cyo-ramadan/prototype-leker",
+  "environment": "prototype",
+  "cloudflareAccount": "Daily Napkin",
+  "d1": {
+    "binding": "DB",
+    "databaseName": "prototype-leker-db",
+    "databaseId": "6977b54c-afce-4275-a0ad-d28e7d942e19"
+  },
+  "action": "publish-source"
+}
