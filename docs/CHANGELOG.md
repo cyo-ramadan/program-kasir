@@ -6,8 +6,9 @@
 - Added the proposed `products` schema and database-level non-empty barcode uniqueness.
 - Added immutable product validation/upsert coverage and completed state-driven product UI wiring from the canonical source bundle.
 - Preserved the local snapshot as the active runtime boundary; no Worker/API adapter or remote migration is active.
+- Clarified that automation transport directories and specialized publisher workflows are not `maxi.pos` runtime/module scope, and that Prototype Leker is owned by its separate repository.
 
-DOC-IMPACT: REQUIRED — database configuration, schema, migration/recovery guidance, and the persistence boundary changed.
+DOC-IMPACT: REQUIRED — database configuration, schema, migration/recovery guidance, persistence boundaries, and repository ownership boundaries are documented.
 
 
 ## 0.1.0 — 2026-08-01
