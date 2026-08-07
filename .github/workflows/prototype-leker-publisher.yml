@@ -58,24 +58,74 @@ jobs:
             stage="cloudflare_deploy"
             cd "$WORK_DIR"
             node --check worker.js
-            npx --yes wrangler@latest deploy --temporary 2>&1 | tee deploy.log
-            deploy_code=${PIPESTATUS[0]}
-            if [ $deploy_code -ne 0 ]; then
-              error="CLOUDFLARE_DEPLOY_FAILED"
+            if [ $? -ne 0 ]; then
+              error="WORKER_SYNTAX_INVALID"
             else
-              live_url=$(grep -Eo 'https://[^[:space:]]+' deploy.log | sed 's/[),]$//' | grep -E 'workers\.dev|pages\.dev' | tail -1)
-              if [ -z "$live_url" ]; then error="LIVE_URL_NOT_FOUND"; fi
+              npx --yes wrangler@latest deploy --temporary 2>&1 | tee deploy.log
+              deploy_code=${PIPESTATUS[0]}
+              if [ $deploy_code -ne 0 ]; then
+                error="CLOUDFLARE_DEPLOY_FAILED"
+              else
+                live_url=$(grep -Eo 'https://[^[:space:]]+' deploy.log | sed 's/[),]$//' | grep -E 'workers\.dev|pages\.dev' | tail -1)
+                if [ -z "$live_url" ]; then error="LIVE_URL_NOT_FOUND"; fi
+              fi
             fi
           fi
 
           if [ -z "$error" ]; then
             stage="verification"
-            curl -fsS "$live_url/api/menu" -o menu.json
+            export BASE_URL="$live_url"
             python3 - <<'PY'
           import json
-          with open('menu.json', encoding='utf-8') as handle:
-              menu = json.load(handle)
+          import os
+          import urllib.request
+
+          base = os.environ["BASE_URL"].rstrip("/")
+
+          def request(path, method="GET", payload=None):
+              body = None
+              headers = {"Accept": "application/json"}
+              if payload is not None:
+                  body = json.dumps(payload).encode()
+                  headers["Content-Type"] = "application/json"
+              req = urllib.request.Request(base + path, data=body, method=method, headers=headers)
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  raw = response.read().decode()
+                  content_type = response.headers.get("content-type", "")
+                  return response.status, json.loads(raw) if "json" in content_type else raw
+
+          status, menu = request("/api/menu")
+          assert status == 200, status
           assert len(menu) == 20, f"expected 20 menu items, got {len(menu)}"
+
+          with urllib.request.urlopen(base + "/customer", timeout=20) as response:
+              customer_html = response.read().decode()
+          assert "MAXI LEKER" in customer_html
+
+          status, order = request("/api/orders", "POST", {
+              "customerName": "Smoke Test",
+              "tableLabel": "CI",
+              "generalNote": "automated verification",
+              "items": [{"menuId": 1, "qty": 2, "note": "test"}],
+          })
+          assert status == 201
+          assert order["status"] == "NEW"
+          assert order["total"] == 16000
+          order_id = order["id"]
+
+          for next_status in ["PREPARING", "READY", "COMPLETED"]:
+              status, updated = request(f"/api/orders/{order_id}/status", "PATCH", {"status": next_status})
+              assert status == 200
+              assert updated["status"] == next_status
+
+          status, final_order = request(f"/api/orders/{order_id}")
+          assert status == 200
+          assert final_order["status"] == "COMPLETED"
+
+          status, reset_result = request("/api/reset", "POST", {})
+          assert status == 200 and reset_result["ok"] is True
+
+          print("PASS: menu=20, customer UI, order create, total, NEW->PREPARING->READY->COMPLETED")
           PY
             if [ $? -ne 0 ]; then error="LIVE_VERIFICATION_FAILED"; fi
           fi
