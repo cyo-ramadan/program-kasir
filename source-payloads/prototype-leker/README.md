@@ -24,7 +24,7 @@ Environment prototype dipisahkan dari environment resmi MAXI:
 
 - GitHub: source code
 - Cloudflare account: **Daily Napkin**
-- Cloudflare Worker: `v2` — HTTP API + static UI
+- Cloudflare Worker: `prototype-leker-v2` — HTTP API + static UI
 - Cloudflare D1: relational persistence melalui binding `env.DB`
 - Prototype D1: `prototype-leker-db` (`6977b54c-afce-4275-a0ad-d28e7d942e19`)
 
@@ -69,4 +69,4 @@ Untuk Cloudflare Git integration, gunakan deploy command `npm run deploy` sehing
 
 ## DOC-IMPACT
 
-**REQUIRED** — Worker permanen diarahkan ke `v2`, environment prototype tetap di Daily Napkin, D1 binding tetap ke `prototype-leker-db`, dan deployment flow menjalankan migration sebelum Worker deploy.
+**REQUIRED** — Worker permanen diarahkan ke `prototype-leker-v2`, environment prototype tetap di Daily Napkin, D1 binding tetap ke `prototype-leker-db`, dan deployment flow menjalankan migration sebelum Worker deploy.
