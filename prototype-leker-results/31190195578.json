@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "stage": "cloudflare_deploy",
+  "error": "CLOUDFLARE_DEPLOY_FAILED",
+  "repositoryUrl": "https://github.com/cyo-ramadan/prototype-leker",
+  "liveUrl": null
+}
