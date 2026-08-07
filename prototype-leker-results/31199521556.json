@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "stage": "source_published",
+  "error": null,
+  "repositoryUrl": "https://github.com/cyo-ramadan/prototype-leker",
+  "liveUrl": null,
+  "deployment": "Managed separately in the permanent Cloudflare account"
+}
