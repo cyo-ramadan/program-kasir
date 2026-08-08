@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "stage": "github_api",
+  "requestFile": "repo-requests/program-olshop-20260808-1841.json",
+  "repositoryName": "program-olshop",
+  "visibility": "private",
+  "httpStatus": 201,
+  "repositoryUrl": "https://github.com/cyo-ramadan/program-olshop"
+}
