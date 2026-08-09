@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Enable admin product entry and set prototype admin PIN to 123456"
+}
