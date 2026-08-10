@@ -1,0 +1,6 @@
+{
+  "feature": "admin-owner-alias-fix",
+  "source": "source-payloads/prototype-leker",
+  "requestedAt": "2026-08-10T18:16:00+07:00",
+  "notes": "Fix /admin static alias so it renders the Owner Console directly instead of redirecting to /admin and looping. No schema or API contract change."
+}
