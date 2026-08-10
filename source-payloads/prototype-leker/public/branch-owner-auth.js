@@ -34,5 +34,15 @@
   document.addEventListener('DOMContentLoaded', () => {
     const authBtn = document.getElementById('authBtn');
     if (authBtn) authBtn.addEventListener('click', () => location.href = '/admin', { capture: true });
+
+    const legacyLock = document.getElementById('logoutBtn');
+    if (legacyLock) {
+      legacyLock.textContent = 'Owner Console';
+      legacyLock.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        location.href = '/admin';
+      }, true);
+    }
   });
 })();
