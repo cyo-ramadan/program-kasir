@@ -204,17 +204,25 @@ export async function handleCashierDrawerApi(request, env, pathname) {
     return json(await drawerDetails(db, drawer));
   }
 
+  const writeRoute = request.method === 'POST' && [
+    '/api/cashier/sales',
+    '/api/cashier/purchases',
+    '/api/cashier/expenses',
+    '/api/cashier/other-income'
+  ].includes(pathname);
+  if (!writeRoute) return null;
+
   const ownership = await requireDrawerOwner(db, cashier);
   if (!ownership.ok) return ownership.response;
   const drawer = ownership.drawer;
 
-  if (request.method === 'POST' && pathname === '/api/cashier/sales') {
+  if (pathname === '/api/cashier/sales') {
     const body = await readJson(request);
     if (!body.ok) return json({ error: 'Payload penjualan tidak valid.' }, 400);
     return (await createSale(db, cashier, drawer, body.value)).response;
   }
 
-  if (request.method === 'POST' && pathname === '/api/cashier/purchases') {
+  if (pathname === '/api/cashier/purchases') {
     const body = await readJson(request);
     if (!body.ok) return json({ error: 'Payload pembelian tidak valid.' }, 400);
     const description = text(body.value?.description, 220);
@@ -235,7 +243,7 @@ export async function handleCashierDrawerApi(request, env, pathname) {
     return json({ ok: true, id, createdAt: now }, 201);
   }
 
-  if (request.method === 'POST' && pathname === '/api/cashier/expenses') {
+  if (pathname === '/api/cashier/expenses') {
     const body = await readJson(request);
     if (!body.ok) return json({ error: 'Payload pengeluaran tidak valid.' }, 400);
     const description = text(body.value?.description, 220);
@@ -250,7 +258,7 @@ export async function handleCashierDrawerApi(request, env, pathname) {
     return json({ ok: true, id, createdAt: now }, 201);
   }
 
-  if (request.method === 'POST' && pathname === '/api/cashier/other-income') {
+  if (pathname === '/api/cashier/other-income') {
     const body = await readJson(request);
     if (!body.ok) return json({ error: 'Payload pendapatan lain tidak valid.' }, 400);
     const description = text(body.value?.description, 220);
