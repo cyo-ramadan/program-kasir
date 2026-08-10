@@ -1,0 +1,6 @@
+{
+  "feature": "owner-branch-drawer-hierarchy",
+  "source": "source-payloads/prototype-leker",
+  "requestedAt": "2026-08-10T17:43:00+07:00",
+  "notes": "Publish Owner -> Gerai -> Workspace Gerai hierarchy, branch-scoped masters including suppliers/cashiers, cashier menu + draft, and one-open-drawer write ownership with store-scoped sales/purchases/expenses/other income."
+}
