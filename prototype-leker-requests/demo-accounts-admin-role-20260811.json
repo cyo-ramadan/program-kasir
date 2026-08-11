@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Add two demo customers, two branch admins, and two seeded cashier logins per branch with functional ADMIN role"
+}
