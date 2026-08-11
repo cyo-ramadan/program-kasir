@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Split customer and staff login, enforce single staff session/tab, reset legacy staff sessions, and consolidate cashier workspace refresh"
+}
