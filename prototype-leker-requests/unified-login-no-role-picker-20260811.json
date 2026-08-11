@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Remove login role picker and resolve Owner, Cashier, or Customer from credentials while keeping customer master branch-scoped"
+}
