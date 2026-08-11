@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Retry branch admin drawer and customer sharing publish after keeping admin alias synchronized with Owner Console"
+}
