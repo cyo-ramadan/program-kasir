@@ -74,7 +74,7 @@
 
   async function cashierRequest(path) {
     const token = sessionStorage.getItem('lekerCashierToken') || '';
-    const response = await originalFetch(path, { headers: token ? { Authorization: `Bearer ${token}` } : {} , cache: 'no-store' });
+    const response = await originalFetch(path, { headers: token ? { Authorization: `Bearer ${token}` } : {}, cache: 'no-store' });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error || `Request gagal (${response.status})`);
     return payload;
@@ -87,7 +87,7 @@
     const report = el('cashierDrawerHistoryReport');
     report.classList.add('hidden');
     list.innerHTML = '<div class="muted">Memuat riwayat laci...</div>';
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
     try {
       const payload = await cashierRequest('/api/cashier/drawers');
       const drawers = payload.drawers || [];
@@ -118,4 +118,11 @@
   const dialogBody = el('cashierDialogBody');
   if (dialogBody) new MutationObserver(enhanceDialog).observe(dialogBody, { childList: true, subtree: true });
   ensureHistoryUi();
+
+  // Replace the old compact active-drawer summary with the canonical full drawer history/report.
+  el('drawerDetailsBtn')?.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openDrawerHistory();
+  }, true);
 })();
