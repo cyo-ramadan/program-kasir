@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Fix branch-specific customer menu fixtures, points visibility, locked customer identity, approval registration flow, and customer order status"
+}
