@@ -32,7 +32,7 @@ test('staff session policy is single active session with explicit takeover', asy
   assert.match(migration, /trg_cashier_single_session/);
   assert.doesNotMatch(migration, /customer_sessions/);
   assert.match(lock, /lekerStaffBrowserLease/);
-  assert.match(lock, /satu browser hanya boleh mempunyai satu tab karyawan aktif/);
+  assert.match(lock, /staffBlocked=1/);
   assert.match(lock, /setInterval/);
   assert.doesNotMatch(lock, /fetch\s*\(/);
 });
