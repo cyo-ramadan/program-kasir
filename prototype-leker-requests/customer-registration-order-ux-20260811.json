@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Publish distinct branch menus, customer points, pending registration approval, server-owned customer name, kiosk cleanup, and customer order status"
+}
