@@ -101,10 +101,7 @@ export async function handleUnifiedLoginApi(request, env, pathname) {
 
   const url = new URL(request.url);
   const storeToken = url.searchParams.get('store') || DEFAULT_STORE_CODE;
-  const selectedStore = await resolveStore(env.DB, storeToken);
-  if (!selectedStore) return json({ error: 'Gerai yang dipilih tidak tersedia.' }, 404);
-
-  const [owner, cashier, customer] = await Promise.all([
+  const [owner, cashier, selectedStore] = await Promise.all([
     env.DB.prepare(`
       SELECT id, username, password_hash, display_name, is_active
       FROM owner_accounts
@@ -119,17 +116,19 @@ export async function handleUnifiedLoginApi(request, env, pathname) {
       WHERE c.username = ? COLLATE NOCASE AND c.is_active = 1 AND s.is_active = 1
       LIMIT 1
     `).bind(username).first(),
-    env.DB.prepare(`
-      SELECT c.id, c.store_id, c.customer_code, c.username, c.password_hash,
-             c.customer_name, c.phone, c.email, c.notes, c.is_active,
-             c.created_at, c.updated_at, s.code AS store_code, s.store_name
-      FROM customers c
-      JOIN stores s ON s.id = c.store_id
-      WHERE c.store_id = ? AND c.username = ? COLLATE NOCASE
-        AND c.is_active = 1 AND s.is_active = 1
-      LIMIT 1
-    `).bind(selectedStore.id, username).first()
+    resolveStore(env.DB, storeToken)
   ]);
+
+  const customer = selectedStore ? await env.DB.prepare(`
+    SELECT c.id, c.store_id, c.customer_code, c.username, c.password_hash,
+           c.customer_name, c.phone, c.email, c.notes, c.is_active,
+           c.created_at, c.updated_at, s.code AS store_code, s.store_name
+    FROM customers c
+    JOIN stores s ON s.id = c.store_id
+    WHERE c.store_id = ? AND c.username = ? COLLATE NOCASE
+      AND c.is_active = 1 AND s.is_active = 1
+    LIMIT 1
+  `).bind(selectedStore.id, username).first() : null;
 
   const passwordHash = await hashCredential(password);
   const matches = [];
@@ -138,6 +137,7 @@ export async function handleUnifiedLoginApi(request, env, pathname) {
   if (customer?.password_hash && customer.password_hash === passwordHash) matches.push({ role: 'CUSTOMER', row: customer });
 
   if (!matches.length) {
+    if (!selectedStore && !owner && !cashier) return json({ error: 'Gerai yang dipilih tidak tersedia.' }, 404);
     return json({ error: 'Username atau password salah.' }, 401);
   }
   if (matches.length > 1) {
