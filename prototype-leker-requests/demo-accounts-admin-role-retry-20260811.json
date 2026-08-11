@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Republish Store Admin role and demo accounts after updating obsolete Owner-only branch workspace regression"
+}
