@@ -17,6 +17,10 @@
 
   window.refreshCashierWorkspace = applyWorkspace;
 
+  showLogin = function showCentralStaffLogin() {
+    location.replace('/?login=staff');
+  };
+
   openDashboard = async function openCashierWorkspace() {
     const cashier = state.cashier;
     el('cashierLoginView').classList.add('hidden');
