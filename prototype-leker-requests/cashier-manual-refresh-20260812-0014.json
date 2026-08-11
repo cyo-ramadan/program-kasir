@@ -1,0 +1,5 @@
+{
+  "action": "publish",
+  "target": "prototype-leker-v2",
+  "reason": "Remove periodic cashier polling, add manual and focus refresh, and document polling and duplicate-tab pitfalls"
+}
