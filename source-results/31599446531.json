@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "stage": "git_push",
+  "requestFile": "source-requests/maxi-platform-20260812.json",
+  "repositoryName": "maxi-platform",
+  "payloadType": "zip-base64",
+  "error": "Command '['git', 'push', '--force', '-u', 'origin', 'main']' returned non-zero exit status 1."
+}
