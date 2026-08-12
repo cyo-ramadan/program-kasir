@@ -1,0 +1,6 @@
+{
+  "repositoryName": "maxi-platform",
+  "payloadPath": "source-payloads/maxi-platform-20260812.zip.b64",
+  "payloadType": "zip-base64",
+  "commitMessage": "feat: establish composable MAXI platform foundation"
+}
