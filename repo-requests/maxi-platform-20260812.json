@@ -1,0 +1,5 @@
+{
+  "repositoryName": "maxi-platform",
+  "visibility": "private",
+  "description": "Composable MAXI SaaS platform foundation for reusable contracts, bridge, accounting, warehouse, and app modules."
+}
