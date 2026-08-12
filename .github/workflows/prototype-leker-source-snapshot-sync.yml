@@ -17,10 +17,11 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.MAXI_REPO_CREATOR_TOKEN }}
     steps:
-      - name: Check out tooling repository
+      - name: Check out latest tooling main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: Sync canonical Prototype Leker into tooling snapshot
         shell: bash
@@ -59,5 +60,4 @@ jobs:
           fi
 
           git commit -m 'chore: sync Prototype Leker tooling snapshot from canonical main'
-          git pull --rebase
           git push
