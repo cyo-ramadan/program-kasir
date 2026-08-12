@@ -28,7 +28,7 @@ jobs:
             local path="$1"
             local slug="$2"
             local status
-            status="$(curl -sS -A "$UA" -D "/tmp/${slug}.headers" -o "/tmp/${slug}.body" -w '%{http_code}' "$BASE_URL$path")"
+            status="$(curl -sSL -A "$UA" -D "/tmp/${slug}.headers" -o "/tmp/${slug}.body" -w '%{http_code}' "$BASE_URL$path")"
             echo "=== $path status=$status ==="
             cat "/tmp/${slug}.headers"
             echo '--- body preview ---'
