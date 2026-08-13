@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/prototype-leker-live-smoke.yml'
+      - 'live-smoke-requests/prototype-leker-*.json'
   workflow_dispatch:
 
 permissions:
@@ -43,6 +44,8 @@ jobs:
           check_url '/cashier' 'cashier'
           check_url '/s/G001/admin' 'admin'
           check_url '/admin-master-menu.js' 'master-menu'
+          check_url '/admin-accounting-workspace.js' 'accounting-workspace'
+          check_url '/admin-accounting-settings-comfort.js' 'accounting-settings-comfort'
           check_url '/api/menu' 'menu'
 
           grep -q '/cashier-sales-orders.js' /tmp/cashier.body
@@ -50,6 +53,14 @@ jobs:
           grep -q '/admin-master-menu.js' /tmp/admin.body
           grep -q '/admin-stock.js' /tmp/admin.body
           grep -q '/admin-transactions-ui.js' /tmp/admin.body
+          grep -q '/admin-accounting-workspace.js' /tmp/admin.body
+          grep -q '/admin-accounting-settings-comfort.js' /tmp/admin.body
+          grep -q 'Buat Jurnal' /tmp/accounting-workspace.body
+          grep -q 'Buku Besar' /tmp/accounting-workspace.body
+          grep -q 'Rugi Laba' /tmp/accounting-workspace.body
+          grep -q 'Neraca' /tmp/accounting-workspace.body
+          grep -q 'Aturan Transaksi' /tmp/accounting-settings-comfort.body
+          grep -q 'acc-columns' /tmp/accounting-settings-comfort.body
           grep -q 'document.body.appendChild(panel)' /tmp/master-menu.body
           grep -q 'admin-master-menu-panel{position:fixed' /tmp/master-menu.body
           jq -e 'type == "array" and length > 0' /tmp/menu.body >/dev/null
