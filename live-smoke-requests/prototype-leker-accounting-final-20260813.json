@@ -1,0 +1,5 @@
+{
+  "target": "prototype-leker-v2",
+  "reason": "Final Accounting live verification after D1 recovery and canonical Cloudflare Git deployment",
+  "expectedMainCommit": "11cb44077d29ec94a5f0bba9de454e4c8dcf5687"
+}
