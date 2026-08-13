@@ -1,0 +1,10 @@
+{
+  "requestedAt": "2026-08-13T08:12:00Z",
+  "authorizedBy": "Bos Cyo",
+  "targetRepository": "cyo-ramadan/prototype-leker",
+  "cloudflareAccount": "Daily Napkin",
+  "worker": "prototype-leker-v2",
+  "d1Database": "prototype-leker-db",
+  "action": "backup-migrate-deploy-verify",
+  "requiredMigration": "0025_accounting_pos_bridge.sql"
+}
