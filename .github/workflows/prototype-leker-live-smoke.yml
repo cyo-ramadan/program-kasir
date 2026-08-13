@@ -46,7 +46,20 @@ jobs:
           check_url '/admin-master-menu.js' 'master-menu'
           check_url '/admin-accounting-workspace.js' 'accounting-workspace'
           check_url '/admin-accounting-settings-comfort.js' 'accounting-settings-comfort'
+          check_url '/__d1-migrations.txt' 'd1-migrations'
+          check_url '/__d1-snapshot-schema.json' 'd1-snapshot-schema'
+          check_url '/__d1-target-schema.json' 'd1-target-schema'
           check_url '/api/menu' 'menu'
+
+          echo '=== FULL D1 MIGRATION DIAGNOSTIC ==='
+          cat /tmp/d1-migrations.body
+          echo
+          echo '=== FULL SNAPSHOT TABLE SCHEMA ==='
+          cat /tmp/d1-snapshot-schema.body
+          echo
+          echo '=== FULL TARGET SCHEMA ==='
+          cat /tmp/d1-target-schema.body
+          echo
 
           grep -q '/cashier-sales-orders.js' /tmp/cashier.body
           grep -q '/cashier-approval-actions.js' /tmp/cashier.body
