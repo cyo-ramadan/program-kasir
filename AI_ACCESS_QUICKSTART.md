@@ -10,8 +10,9 @@ Purpose: give AI sessions a fast, verified path to GitHub and Cloudflare tooling
 
 1. Read the active MAXI protocol / onboarding manual first.
 2. Check whether the required GitHub connector/tool is already available.
-3. Check the repository-owned workflow or automation bridge below.
-4. If a secret is missing, ask Bos Cyo only to provision it in the provider secret store. Never ask Bos Cyo to paste the secret into chat.
+3. For Prototype Leker, check the **Cloudflare Git Integration check on current `main` before asking for Cloudflare API credentials**.
+4. Check repository-owned workflows or automation bridges only after the canonical Git Integration path is understood.
+5. If a credential is genuinely required and missing, ask Bos Cyo only to provision it in the provider secret store. Never ask Bos Cyo to paste the secret into chat.
 
 Canonical protocol repository: `cyo-ramadan/maxi-protocol`.
 
@@ -24,13 +25,13 @@ Relevant protocol docs:
 
 ### Preferred path: connected GitHub tool
 
-When the AI environment has the GitHub connector/tool, use it directly for repository reads/writes, branches, PRs, Actions status, and logs. Do not request a PAT merely because a raw terminal is unavailable.
+When the AI environment has the GitHub connector/tool, use it directly for repository reads/writes, branches, PRs, commit/check status, and logs. Do not request a PAT merely because a raw terminal is unavailable.
 
 ### Automation repository
 
 Shared automation / transport repository: `cyo-ramadan/program-kasir`.
 
-This repository contains request/result bridges and GitHub Actions workflows. It is NOT the source of truth for Prototype Leker runtime code.
+This repository contains request/result bridges and live/recovery workflows. It is NOT the source of truth for Prototype Leker runtime code.
 
 ### GitHub credential names
 
@@ -61,6 +62,7 @@ Do NOT use Cloudflare account `Dwicahya` for prototypes. `Dwicahya` is reserved 
 ### Prototype Leker canonical resources
 
 - GitHub repository: `cyo-ramadan/prototype-leker`
+- production branch: `main`
 - Cloudflare account: `Daily Napkin`
 - Worker: `prototype-leker-v2`
 - D1 database: `prototype-leker-db`
@@ -70,33 +72,63 @@ Do NOT use Cloudflare account `Dwicahya` for prototypes. `Dwicahya` is reserved 
 - Live URL: `https://prototype-leker-v2.daily-napkin.workers.dev`
 - Worker config: `prototype-leker/wrangler.jsonc`
 
-## 4. Cloudflare credentials
+## 4. Prototype Leker canonical Cloudflare path — use this first
 
-Credential names used by the repository workflows:
+Prototype Leker has an active **Cloudflare Workers Git Integration** connected to `cyo-ramadan/prototype-leker` `main`.
+
+Normal path:
+
+`AI edit/test → merge/push main → Cloudflare GitHub App check → repository npm run deploy → D1 migrations → Worker deploy → live smoke`.
+
+The repository-owned deploy command is:
+
+```bash
+npm run db:migrations:apply && npx wrangler deploy
+```
+
+The deployment check visible from GitHub is named:
+
+`Workers Builds: prototype-leker-v2`
+
+and is owned by the **Cloudflare Workers and Pages** GitHub App.
+
+### Critical shortcut for AI sessions
+
+If current `prototype-leker/main` has `Workers Builds: prototype-leker-v2` and that check is `SUCCESS`, Cloudflare-side credentials are already functioning through Git Integration. **Do not ask Bos Cyo for `CLOUDFLARE_API_TOKEN` merely because a separate GitHub Actions deploy job is red.**
+
+A GitHub Actions secret-based deployment check can fail independently while the canonical Cloudflare Git App deployment succeeds. Evaluate the checks by owner/name, not by one combined red/green impression.
+
+To trigger the canonical route when a deployment is needed, make the approved code/docs change on `main` through the normal merge flow and monitor the Cloudflare App check. Do not create meaningless temp files just to trigger a build unless performing an explicitly documented recovery operation.
+
+## 5. Cloudflare credential names — fallback only
+
+Credential names used by secret-based fallback workflows:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-### Canonical Prototype Leker deploy path
+These are not required to be readable by the AI when the canonical Cloudflare Git Integration is healthy.
+
+### Prototype Leker GitHub Actions fallback
 
 `cyo-ramadan/prototype-leker/.github/workflows/ci-deploy.yml`
 
-The deploy job declares GitHub Environment `production`, then reads:
+The production job declares GitHub Environment `production` and may read:
 
 - `secrets.CLOUDFLARE_API_TOKEN`
 - `secrets.CLOUDFLARE_ACCOUNT_ID`
 
-Preferred provisioning location for this canonical path:
+Intended provisioning location for that fallback path:
 
 `cyo-ramadan/prototype-leker` -> GitHub Settings -> Environments -> `production` -> Environment secrets.
 
-Repository-level Actions secrets can also be resolved by GitHub's `secrets` context, but the explicit `production` environment is the intended operational boundary for this deploy job.
+If this job fails only because those secrets are missing while `Workers Builds: prototype-leker-v2` is SUCCESS, canonical deployment is not blocked. Report the fallback job separately rather than asking Bos Cyo for a token unnecessarily.
 
-If either credential is unavailable, report `BLOCKED: CLOUDFLARE_CREDENTIAL_NOT_PROVISIONED` and give Bos Cyo the shortest provider-side provisioning instruction. Never ask for the token value in chat.
+If Git Integration itself is unavailable and the fallback is actually required, report `BLOCKED: CLOUDFLARE_CREDENTIAL_NOT_PROVISIONED` and give Bos Cyo the shortest provider-side provisioning instruction. Never ask for the token value in chat.
 
 ### Recovery / bridge path
 
-Fallback automation exists in:
+Fallback automation also exists in:
 
 `cyo-ramadan/program-kasir/.github/workflows/prototype-leker-cloudflare-recovery.yml`
 
@@ -104,73 +136,90 @@ Trigger path:
 
 `cloudflare-requests/prototype-leker-*.json`
 
-This recovery workflow expects the same two names as GitHub Actions secrets of `cyo-ramadan/program-kasir`:
+This recovery workflow expects the same two secret names in `cyo-ramadan/program-kasir`:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-The recovery flow is:
+Use this only when the canonical Git Integration is unavailable or an explicit recovery operation requires the bridge. Do not treat it as the normal deploy path.
 
-1. validate credentials;
-2. checkout `cyo-ramadan/prototype-leker` main;
-3. run `npm run check && npm test`;
-4. export a remote D1 backup;
-5. preserve the backup as a GitHub Actions artifact;
-6. apply remote D1 migrations;
-7. deploy the Worker;
-8. verify the live Accounting assets/API boundary.
+## 6. D1 migration and recovery shortcut
 
-Use the canonical Prototype Leker workflow first. Use the `program-kasir` recovery bridge when the canonical deploy path is unavailable or an explicit recovery operation is required.
+Do not equate D1 migration ledger rows with guaranteed schema completeness.
 
-## 5. Repository-owned Wrangler commands
+During the 2026-08-13 Accounting deployment incident, remote D1 reported migrations through `0022` as applied while `transaction_accounting_mappings` and `transaction_accounting_snapshots` were absent. The canonical Cloudflare build therefore failed at `0023`.
 
-When an AI environment already has authorized Cloudflare credentials, use the repository config and the same commands as the approved workflows:
+Approved diagnostic/recovery pattern:
+
+1. inspect `wrangler d1 migrations list DB --remote`;
+2. inspect exact affected objects via `sqlite_schema` / `PRAGMA table_info(...)`;
+3. capture D1 Time Travel checkpoint or approved backup before mutation;
+4. never rewrite an already-applied migration to hide remote drift;
+5. recreate only objects proven missing using the authoritative versioned migration definition;
+6. resume `wrangler d1 migrations apply DB --remote`;
+7. restore the normal repo deploy command;
+8. verify a subsequent normal Cloudflare Git Build is green;
+9. remove any temporary diagnostic/recovery asset and prove it is no longer public.
+
+The 2026-08-13 incident is resolved and remote Prototype Leker D1 is migrated through `0026_accounting_six_decimal_precision.sql`.
+
+## 7. Repository-owned Wrangler commands
+
+When an AI environment already has authorized Cloudflare credentials, or when commands execute inside the authorized Cloudflare Git Build, use repository config:
 
 ```bash
 # from cyo-ramadan/prototype-leker
 npm run check
 npm test
 
-# backup before stateful deployment
-npx --yes wrangler d1 export DB --remote --output prototype-leker-db-before-deploy.sql
+# inspect pending migrations
+npx --yes wrangler d1 migrations list DB --remote
 
-# migrate the dedicated prototype D1
+# optional approved recovery checkpoint
+npx --yes wrangler d1 time-travel info DB --json
+
+# migrate dedicated prototype D1
 npx --yes wrangler d1 migrations apply DB --remote
 
-# deploy the permanent Worker
+# deploy permanent Worker
 npx --yes wrangler deploy
 ```
 
-Do not manually substitute another database ID/account for convenience. `wrangler.jsonc` is the repository-owned resource configuration.
+Do not substitute another database/account for convenience. `wrangler.jsonc` is the repository-owned resource configuration.
 
-## 6. Live verification
+## 8. Live verification
 
-Primary deployed endpoint:
+Primary endpoint:
 
 `https://prototype-leker-v2.daily-napkin.workers.dev`
 
-A reusable live diagnostic workflow exists at:
+Reusable live smoke:
 
 `cyo-ramadan/program-kasir/.github/workflows/prototype-leker-live-smoke.yml`
 
-It checks customer, cashier, branch admin, selected assets, and `/api/menu`.
+Current smoke verifies:
 
-The Prototype Leker canonical deploy workflow additionally verifies Accounting assets and expects the unauthenticated Accounting settings API boundary to return `401`.
+- customer, cashier, and branch admin surfaces are served;
+- Accounting workspace asset is served and contains Data Akun, Buat Jurnal, Data Jurnal, Buku Besar, Rugi Laba, and Neraca;
+- Setting Akuntansi comfort asset is served and contains Aturan Transaksi / two-column journal mapping layout;
+- unauthenticated Accounting/Setting APIs return `401` instead of schema/runtime `5xx`;
+- temporary D1 diagnostic assets are absent (`404`).
 
-## 7. What to do when an AI says "I need the token"
+## 9. What to do when an AI says "I need the token"
 
 Do this instead:
 
-1. verify whether the GitHub connector can perform the task;
-2. inspect the relevant existing workflow;
-3. inspect Actions status/logs for a missing-secret gate;
-4. identify the exact secret NAME and approved secret store;
-5. if human provisioning is truly required, tell Bos Cyo exactly where to add it;
-6. retry through the existing workflow.
+1. verify connected GitHub tool access;
+2. inspect current `prototype-leker/main` check runs;
+3. look specifically for `Workers Builds: prototype-leker-v2` from the Cloudflare GitHub App;
+4. if it is healthy, use/monitor Git Integration and do not ask for a token;
+5. inspect secret-based GitHub Actions only as a separate fallback path;
+6. if both canonical Git Integration and all authorized alternatives are unavailable, identify the exact secret NAME + approved secret store and request provider-side provisioning only;
+7. retry through the approved existing route.
 
 Never solve access friction by committing a secret, pasting a secret into chat, echoing it in Actions, or creating an undocumented credential path.
 
-## 8. Fast routing table
+## 10. Fast routing table
 
 | Need | First place to go |
 |---|---|
@@ -178,12 +227,14 @@ Never solve access friction by committing a secret, pasting a secret into chat, 
 | MAXI governance/manual | `cyo-ramadan/maxi-protocol` |
 | Shared GitHub automation | `cyo-ramadan/program-kasir` |
 | Prototype Leker source | `cyo-ramadan/prototype-leker` |
-| Prototype Leker CI/deploy | `prototype-leker/.github/workflows/ci-deploy.yml` |
-| Prototype Leker Cloudflare recovery | `program-kasir/.github/workflows/prototype-leker-cloudflare-recovery.yml` |
+| Prototype Leker normal deploy | Cloudflare Git App check `Workers Builds: prototype-leker-v2` on `main` |
+| Repository deploy command | `npm run deploy` |
+| Prototype Leker secret-based fallback | `prototype-leker/.github/workflows/ci-deploy.yml` |
+| Prototype Leker Cloudflare recovery bridge | `program-kasir/.github/workflows/prototype-leker-cloudflare-recovery.yml` |
 | Prototype Leker live smoke | `program-kasir/.github/workflows/prototype-leker-live-smoke.yml` |
 | Cloudflare prototype account | `Daily Napkin` |
 | Prototype Leker D1 | `prototype-leker-db`, binding `DB` |
 
-## 9. Maintenance rule
+## 11. Maintenance rule
 
-This is a shortcut, not a replacement for the MAXI onboarding/manuals. When credential names, workflow paths, repository boundaries, or Cloudflare resources change, update this file in the same changeset. Secret VALUES remain outside Git forever.
+This is a shortcut, not a replacement for the MAXI onboarding/manuals. When credential names, workflow paths, repository boundaries, Cloudflare resources, or canonical deploy route change, update this file in the same changeset. Secret VALUES remain outside Git forever.
