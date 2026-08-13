@@ -19,61 +19,51 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Diagnose live HTTP response
+      - name: Verify live Prototype Leker Accounting
         shell: bash
         run: |
           set -euo pipefail
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36'
 
-          get_url() {
+          expect_200() {
             local path="$1"
             local slug="$2"
             local status
-            status="$(curl -sSL -A "$UA" -D "/tmp/${slug}.headers" -o "/tmp/${slug}.body" -w '%{http_code}' "$BASE_URL$path")"
-            echo "=== $path status=$status ==="
-            if [ "$status" -ge 400 ]; then
-              cat "/tmp/${slug}.headers"
-              head -c 1200 "/tmp/${slug}.body" || true
-              exit 22
-            fi
+            status="$(curl -sSL -A "$UA" -o "/tmp/${slug}.body" -w '%{http_code}' "$BASE_URL$path")"
+            echo "$path => $status"
+            test "$status" = "200"
           }
 
-          get_url '/customer' 'customer'
-          get_url '/cashier' 'cashier'
-          get_url '/s/G001/admin' 'admin'
-          get_url '/admin-master-menu.js' 'master-menu'
-          get_url '/admin-accounting-workspace.js' 'accounting-workspace'
-          get_url '/admin-accounting-settings-comfort.js' 'accounting-settings-comfort'
-          get_url '/__d1-migrations.txt' 'd1-migrations'
-          get_url '/__d1-time-travel.json' 'd1-time-travel'
-          get_url '/__d1-accounting-legacy-schema.json' 'd1-accounting-legacy-schema'
-          get_url '/__d1-account-refs-schema.json' 'd1-account-refs-schema'
-          get_url '/__d1-mappings-schema.json' 'd1-mappings-schema'
-          get_url '/__d1-snapshot-schema.json' 'd1-snapshot-schema'
-          get_url '/api/menu' 'menu'
+          expect_401() {
+            local path="$1"
+            local slug="$2"
+            local status
+            status="$(curl -sSL -A "$UA" -o "/tmp/${slug}.body" -w '%{http_code}' "$BASE_URL$path")"
+            echo "$path => $status"
+            test "$status" = "401"
+          }
 
-          echo '=== D1 MIGRATIONS ==='
-          cat /tmp/d1-migrations.body
-          echo
-          echo '=== D1 TIME TRAVEL INFO ==='
-          cat /tmp/d1-time-travel.body
-          echo
-          echo '=== LEGACY ACCOUNTING SCHEMA ==='
-          cat /tmp/d1-accounting-legacy-schema.body
-          echo
-          echo '=== ACCOUNT REFS COLUMNS ==='
-          cat /tmp/d1-account-refs-schema.body
-          echo
-          echo '=== MAPPINGS COLUMNS ==='
-          cat /tmp/d1-mappings-schema.body
-          echo
-          echo '=== SNAPSHOT COLUMNS ==='
-          cat /tmp/d1-snapshot-schema.body
-          echo
+          expect_absent() {
+            local path="$1"
+            local slug="$2"
+            local status
+            status="$(curl -sSL -A "$UA" -o "/tmp/${slug}.body" -w '%{http_code}' "$BASE_URL$path")"
+            echo "$path => $status"
+            test "$status" = "404"
+          }
+
+          expect_200 '/customer' 'customer'
+          expect_200 '/cashier' 'cashier'
+          expect_200 '/s/G001/admin' 'admin'
+          expect_200 '/admin-accounting-workspace.js' 'accounting-workspace'
+          expect_200 '/admin-accounting-settings-comfort.js' 'accounting-settings-comfort'
+          expect_200 '/api/menu' 'menu'
 
           grep -q '/admin-accounting-workspace.js' /tmp/admin.body
           grep -q '/admin-accounting-settings-comfort.js' /tmp/admin.body
+          grep -q 'Data Akun' /tmp/accounting-workspace.body
           grep -q 'Buat Jurnal' /tmp/accounting-workspace.body
+          grep -q 'Data Jurnal' /tmp/accounting-workspace.body
           grep -q 'Buku Besar' /tmp/accounting-workspace.body
           grep -q 'Rugi Laba' /tmp/accounting-workspace.body
           grep -q 'Neraca' /tmp/accounting-workspace.body
@@ -81,4 +71,14 @@ jobs:
           grep -q 'acc-columns' /tmp/accounting-settings-comfort.body
           jq -e 'type == "array" and length > 0' /tmp/menu.body >/dev/null
 
-          echo 'LIVE_HTTP_DIAGNOSTIC_PASS'
+          # Protected Accounting APIs must exist and stop at authentication, not fail with schema/runtime 5xx.
+          expect_401 '/api/admin/settings/accounting' 'accounting-settings-api'
+          expect_401 '/api/admin/accounting' 'accounting-workspace-api'
+          expect_401 '/api/admin/accounting/journals' 'accounting-journals-api'
+
+          # Temporary production diagnostics used during D1 recovery must not remain publicly served.
+          expect_absent '/__d1-time-travel.json' 'd1-time-travel'
+          expect_absent '/__d1-accounting-legacy-schema.json' 'd1-legacy-schema'
+          expect_absent '/__d1-migrations.txt' 'd1-migrations'
+
+          echo 'LIVE_ACCOUNTING_SMOKE_PASS'
