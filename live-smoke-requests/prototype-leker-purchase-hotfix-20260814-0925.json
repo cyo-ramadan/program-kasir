@@ -1,0 +1,7 @@
+{
+  "project": "prototype-leker",
+  "requestedAt": "2026-08-14T09:25:00Z",
+  "targetCommit": "cd6843e66ac506516eca0f399f36b35e99066dd7",
+  "reason": "Verify live deployment after cashier Beli Bahan schema compatibility hotfix",
+  "expected": "LIVE_ACCOUNTING_SMOKE_PASS"
+}
