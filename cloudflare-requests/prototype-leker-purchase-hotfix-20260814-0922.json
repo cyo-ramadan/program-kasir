@@ -1,0 +1,15 @@
+{
+  "project": "prototype-leker",
+  "requestedAt": "2026-08-14T09:22:00Z",
+  "requestedBy": "Karen for Bos Cyo",
+  "targetRepository": "cyo-ramadan/prototype-leker",
+  "targetRef": "main",
+  "expectedHead": "cd6843e66ac506516eca0f399f36b35e99066dd7",
+  "reason": "Apply migration 0029 and deploy the cashier purchase schema-compatibility hotfix after the canonical Cloudflare Git build became stuck.",
+  "verify": [
+    "remote D1 migrations apply through 0029_purchase_accounting_defaults.sql",
+    "Worker deploys main commit cd6843e66ac506516eca0f399f36b35e99066dd7",
+    "cashier workspace no longer returns a schema runtime 5xx before opening Beli Bahan",
+    "Accounting settings API remains auth-protected"
+  ]
+}
