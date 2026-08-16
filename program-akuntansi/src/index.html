@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MAXI Accounting Foundation: double-entry journal, ledger, trial balance, and local audit trail.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>MAXI Accounting Foundation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+        <div><span>MAXI</span><strong>Accounting</strong></div>
+      </div>
+      <nav aria-label="Accounting navigation">
+        <button class="nav-button active" data-view="dashboard"><span>01</span> Dashboard</button>
+        <button class="nav-button" data-view="accounts"><span>02</span> Accounts</button>
+        <button class="nav-button" data-view="journals"><span>03</span> Journal</button>
+        <button class="nav-button" data-view="ledger"><span>04</span> General Ledger</button>
+        <button class="nav-button" data-view="trial"><span>05</span> Trial Balance</button>
+        <button class="nav-button" data-view="audit"><span>06</span> Audit & Data</button>
+      </nav>
+      <div class="sidebar-note">
+        <span>Foundation v0.1.0</span>
+        <p>Local prototype. No external integration or production database.</p>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div><span class="eyebrow">MAXI internal software ecosystem</span><h1>Financial facts, clearly posted.</h1></div>
+        <span class="environment-chip">LOCAL FOUNDATION</span>
+      </header>
+      <div id="notice" class="notice" role="status" aria-live="polite"></div>
+      <div id="appView"></div>
+    </main>
+  </div>
+  <script src="accounting-core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
